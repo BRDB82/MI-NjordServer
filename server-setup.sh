@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Redirect stout and stderr to njord.txt and still output to console
-exec > >(tee -1 njord.txt)
+exec > >(tee -l njord.txt)
 exec 2>&1
 
 echo -ne "
