@@ -1,0 +1,14 @@
+Install RHELNjord (maybe also a Fedora version) 
+RockyLinux (base)
+boot.iso
+script
+
+curl -H "Authorization: token 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"
+ -H "Accept: application/vnd.github.v3.raw"
+ -fsSL https://api.github.com/repos/BRDB82/MI-NjordServer/contents/server-setup.sh \
+     -o server-setup.sh
+
+chmod +x server-setup.sh
+./server-setup.sh
+
+https://github.com/ChrisTitusTech/linutil/blob/main/core/tabs/system-setup/arch/server-setup.sh
