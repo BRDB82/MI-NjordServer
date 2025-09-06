@@ -333,7 +333,7 @@ echo "Setting up repositories for optimal download"
 # Enable NTP for time sync
 timedatectl set-ntp true
 
-# Ensure dnf is ready and update metadata // this doesn't seem to work.
+# Ensure dnf is ready and update metadata
 mkdir -p /etc/yum.repos.d
 
 echo "[baseos]
@@ -389,13 +389,6 @@ if [ ! -d "/mnt" ]; then
     mkdir /mnt
 fi
 
-echo -ne "
--------------------------------------------------------------------------
-                    Installing Prerequisites
--------------------------------------------------------------------------
-"
-
-dnf install -y gptfdisk glibc
 echo -ne "
 -------------------------------------------------------------------------
                     Formatting Disk
@@ -472,3 +465,43 @@ if ! grep -qs '/mnt' /proc/mounts; then
     echo "Rebooting in 1 Second ..." && sleep 1
     reboot now
 fi
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Rocky Linux Install on Main Drive
+-------------------------------------------------------------------------
+"
+
+# Detect UEFI or BIOS
+if [[ -d "/sys/firmware/efi" ]]; then
+    BOOT_MODE="UEFI"
+else
+    BOOT_MODE="BIOS"
+fi
+
+# Install base system into /mnt
+dnf --installroot=/mnt --releasever=10.0 --setopt=install_weak_deps=False -y groupinstall "Core"
+dnf --installroot=/mnt --releasever=10.0 -y install linux-firmware grub2 efibootmgr
+
+# Copy resolv.conf for networking inside chroot
+cp /etc/resolv.conf /mnt/etc/resolv.conf
+
+# Generate fstab
+echo -ne "
+-------------------------------------------------------------------------
+                    Generating /etc/fstab
+-------------------------------------------------------------------------
+"
+blkid | while read -r line; do
+    dev=$(echo "$line" | cut -d: -f1)
+    uuid=$(echo "$line" | grep -o 'UUID="[^"]*"' | cut -d'"' -f2)
+    type=$(echo "$line" | grep -o 'TYPE="[^"]*"' | cut -d'"' -f2)
+    mountpoint=$(findmnt -n -o TARGET "$dev")
+    [[ -z "$mountpoint" ]] && continue
+    echo "UUID=$uuid $mountpoint $type defaults 0 0" >> /mnt/etc/fstab
+done
+
+echo "
+  Generated /etc/fstab:
+"
+cat /mnt/etc/fstab
