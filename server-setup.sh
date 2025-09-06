@@ -56,7 +56,7 @@ rocky_check() {
 }
 
 dnf_check() {
-    if [[ -f /var/lib/dnf/lock ]] || pgrep -x dnf >/dev/null || pgrep -x yum >/dev/null; then
+    if [[ -f /var/lib/dnf/lock ]] || ps -e | grep -w -E 'dnf|yum' >/dev/null; then
         echo "ERROR! DNF is blocked."
         echo -ne "If not running remove /var/lib/dnf/lock or kill the running process.\n"
         exit 0
@@ -309,19 +309,19 @@ userinfo () {
 
 # Starting functions
 background_checks
-clear
+printf "\033[H\033[J" #clear
 logo
 userinfo
-clear
+printf "\033[H\033[J" #clear
 logo
 diskpart
-clear
+printf "\033[H\033[J" #clear
 logo
 filesystem
-clear
+printf "\033[H\033[J" #clear
 logo
 timezone
-clear
+printf "\033[H\033[J" #clear
 logo
 keymap
 
