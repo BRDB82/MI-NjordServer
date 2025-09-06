@@ -360,11 +360,11 @@ HOME_URL="https://rockylinux.org/"
 BUG_REPORT_URL="https://bugs.rockylinux.org/"
 ' > /etc/os-release
 
-dnf clean all
-dnf makecache
+dnf --releasever=10.0 clean all
+dnf --releasever=10.0 makecache
 
 # Install useful packages
-dnf --releasever=10.0 instally -y rocky-release
+dnf --releasever=10.0 install -y rocky-release
 dnf -releasever=10.0 install -y epel-release
 dnf -releasever=10.0 install -y rsync grub2-tools setfont kbd
 
