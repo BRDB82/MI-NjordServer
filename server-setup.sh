@@ -165,3 +165,276 @@ filesystem () {
     *) echo "Wrong option please select again"; filesystem;;
     esac
 }
+# @description Detects and sets timezone for Rocky Linux.
+timezone () {
+    # Attempt to detect timezone using external service
+    time_zone="$(curl --fail -s https://ipapi.co/timezone)"
+    echo -ne "
+System detected your timezone to be '$time_zone' \n"
+    echo -ne "Is this correct?
+    "
+    options=("Yes" "No")
+    select_option "${options[@]}"
+
+    case $? in
+        0)
+            echo "${time_zone} set as timezone"
+            export TIMEZONE=$time_zone
+            timedatectl set-timezone "$time_zone"
+            ;;
+        1)
+            echo "Please enter your desired timezone e.g. Europe/Brussels :"
+            read -r new_timezone
+            echo "${new_timezone} set as timezone"
+            export TIMEZONE=$new_timezone
+            timedatectl set-timezone "$new_timezone"
+            ;;
+        *)
+            echo "Wrong option. Try again"
+            timezone
+            ;;
+    esac
+}
+# @description Set user's keyboard mapping for Rocky Linux.
+keymap () {
+    echo -ne "
+Please select keyboard layout from this list
+"
+    # These are default key maps commonly supported on Rocky Linux
+    options=(us by ca cf cz de dk es et fa fi fr gr hu il it lt lv mk nl no pl ro ru se sg ua uk)
+
+    select_option "${options[@]}"
+    keymap=${options[$?]}
+
+    echo -ne "Your keyboard layout: ${keymap} \n"
+    export KEYMAP=$keymap
+
+    # Apply the selected keymap using localectl
+    localectl set-keymap "$keymap"
+}
+# @description Choose whether drive is SSD or not for Rocky Linux (non-Btrfs).
+drivessd () {
+    echo -ne "
+Is this an SSD? yes/no:
+"
+    options=("Yes" "No")
+    select_option "${options[@]}"
+
+    case $? in
+        0)
+            export MOUNT_OPTIONS="noatime,commit=120"
+            ;;
+        1)
+            export MOUNT_OPTIONS="noatime,commit=120"
+            ;;
+        *)
+            echo "Wrong option. Try again"
+            drivessd
+            ;;
+    esac
+}
+# @description Disk selection for drive to be used with installation.
+diskpart () {
+echo -ne "
+------------------------------------------------------------------------
+    THIS WILL FORMAT AND DELETE ALL DATA ON THE DISK
+    Please make sure you know what you are doing because
+    after formatting your disk there is no way to get data back
+    *****BACKUP YOUR DATA BEFORE CONTINUING*****
+    ***I AM NOT RESPONSIBLE FOR ANY DATA LOSS***
+------------------------------------------------------------------------
+
+"
+
+    PS3='
+Select the disk to install on: '
+    # Filter only rotational disks (ROTA=1), exclude USB/CD-ROM
+    options=($(lsblk -dn -o NAME,SIZE,ROTA | awk '$3==1{print "/dev/"$1"|"$2}'))
+
+    select_option "${options[@]}"
+    disk=${options[$?]%|*}
+
+    echo -e "\n${disk} selected \n"
+    export DISK=${disk}
+
+    drivessd
+}
+
+# @description Gather username and password to be used for installation.
+userinfo () {
+    # Loop through user input until the user gives a valid username
+    while true
+    do
+            read -r -p "Please enter username: " username
+            if [[ "${username,,}" =~ ^[a-z_]([a-z0-9_-]{0,31}|[a-z0-9_-]{0,30}\$)$ ]]
+            then
+                    break
+            fi
+            echo "Incorrect username."
+    done
+    export USERNAME=$username
+
+    while true
+    do
+        read -rs -p "Please enter password: " PASSWORD1
+        echo -ne "\n"
+        read -rs -p "Please re-enter password: " PASSWORD2
+        echo -ne "\n"
+        if [[ "$PASSWORD1" == "$PASSWORD2" ]]; then
+            break
+        else
+            echo -ne "ERROR! Passwords do not match. \n"
+        fi
+    done
+    export PASSWORD=$PASSWORD1
+
+     # Loop through user input until the user gives a valid hostname, but allow the user to force save
+    while true
+    do
+            read -r -p "Please name your machine: " name_of_machine
+            # hostname regex (!!couldn't find spec for computer name!!)
+            if [[ "${name_of_machine,,}" =~ ^[a-z][a-z0-9_.-]{0,62}[a-z0-9]$ ]]
+            then
+                    break
+            fi
+            # if validation fails allow the user to force saving of the hostname
+            read -r -p "Hostname doesn't seem correct. Do you still want to save it? (y/n)" force
+            if [[ "${force,,}" = "y" ]]
+            then
+                    break
+            fi
+    done
+    export NAME_OF_MACHINE=$name_of_machine
+}
+
+# Starting functions
+background_checks
+clear
+logo
+userinfo
+clear
+logo
+diskpart
+clear
+logo
+filesystem
+clear
+logo
+timezone
+clear
+logo
+keymap
+
+echo "Setting up repositories for optimal download"
+
+# Detect country code for potential mirror selection (not used directly in Rocky)
+iso=$(curl -4 -s ifconfig.io/country_code)
+
+# Enable NTP for time sync
+timedatectl set-ntp true
+
+# Ensure dnf is ready and update metadata
+dnf makecache
+
+# Install useful packages
+dnf install -y epel-release
+dnf install -y rsync grub2-tools setfont kbd
+
+# Set console font (if applicable)
+setfont lat9w-16
+
+# Backup existing repo files
+mkdir -p /etc/yum.repos.d/backup
+cp /etc/yum.repos.d/*.repo /etc/yum.repos.d/backup/
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Repositories prepared for $iso region
+-------------------------------------------------------------------------
+"
+
+# Optional: You could manually adjust repo baseurls here if you have a mirror list
+# For example, using a local mirror or CDN-optimized repo
+
+# Ensure /mnt exists
+if [ ! -d "/mnt" ]; then
+    mkdir /mnt
+fi
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Installing Prerequisites
+-------------------------------------------------------------------------
+"
+
+dnf install -y gptfdisk glibc
+echo -ne "
+-------------------------------------------------------------------------
+                    Formatting Disk
+-------------------------------------------------------------------------
+"
+umount -A --recursive /mnt # make sure everything is unmounted before we start
+# disk prep
+sgdisk -Z "${DISK}" # zap all on disk
+sgdisk -a 2048 -o "${DISK}" # new gpt disk 2048 alignment
+
+# create partitions
+sgdisk -n 1::+1M --typecode=1:ef02 --change-name=1:'BIOSBOOT' "${DISK}" # partition 1 (BIOS Boot Partition)
+sgdisk -n 2::+1GiB --typecode=2:ef00 --change-name=2:'EFIBOOT' "${DISK}" # partition 2 (UEFI Boot Partition)
+sgdisk -n 3::-0 --typecode=3:8300 --change-name=3:'ROOT' "${DISK}" # partition 3 (Root), default start, remaining
+if [[ ! -d "/sys/firmware/efi" ]]; then # Checking for bios system
+    sgdisk -A 1:set:2 "${DISK}"
+fi
+partprobe "${DISK}" # reread partition table to ensure it is correct
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Creating Filesystems
+-------------------------------------------------------------------------
+"
+
+if [[ "${DISK}" =~ "nvme" ]]; then
+    partition2=${DISK}p2
+    partition3=${DISK}p3
+else
+    partition2=${DISK}2
+    partition3=${DISK}3
+fi
+
+if [[ "${FS}" == "ext4" ]]; then
+    mkfs.fat -F32 -n "EFIBOOT" "${partition2}"
+    mkfs.ext4 "${partition3}"
+    mount -t ext4 "${partition3}" /mnt
+
+elif [[ "${FS}" == "xfs" ]]; then
+    mkfs.fat -F32 -n "EFIBOOT" "${partition2}"
+    mkfs.xfs -f "${partition3}"
+    mount -t xfs "${partition3}" /mnt
+
+elif [[ "${FS}" == "luks" ]]; then
+    mkfs.fat -F32 "${partition2}"
+    echo -n "${LUKS_PASSWORD}" | cryptsetup -y -v luksFormat "${partition3}" -
+    echo -n "${LUKS_PASSWORD}" | cryptsetup open "${partition3}" ROOT -
+    mkfs.ext4 /dev/mapper/ROOT
+    mount -t ext4 /dev/mapper/ROOT /mnt
+    ENCRYPTED_PARTITION_UUID=$(blkid -s UUID -o value "${partition3}")
+fi
+
+BOOT_UUID=$(blkid -s UUID -o value "${partition2}")
+
+sync
+if ! mountpoint -q /mnt; then
+    echo "ERROR! Failed to mount ${partition3} to /mnt after multiple attempts."
+    exit 1
+fi
+
+mkdir -p /mnt/boot
+mount -U "${BOOT_UUID}" /mnt/boot/
+
+if ! grep -qs '/mnt' /proc/mounts; then
+    echo "Drive is not mounted, cannot continue"
+    echo "Rebooting in 3 Seconds ..." && sleep 1
+    echo "Rebooting in 2 Seconds ..." && sleep 1
+    echo "Rebooting in 1 Second ..." && sleep 1
+    reboot now
+fi
