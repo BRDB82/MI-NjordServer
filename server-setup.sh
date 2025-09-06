@@ -348,7 +348,7 @@ baseurl=https://dl.rockylinux.org/pub/rocky/10/AppStream/x86_64/os/
 enabled=1
 gpgcheck=0" | tee /etc/yum.repos.d/Rocky-AppStream.repo
 
-cho 'NAME="Rocky Linux"
+echo 'NAME="Rocky Linux"
 VERSION="10.0 (Red Quartz)"
 ID="rocky"
 VERSION_ID="10.0"
@@ -364,6 +364,7 @@ dnf clean all
 dnf makecache
 
 # Install useful packages
+dnf --releasever=10.0 instally -y rocky-release
 dnf -releasever=10.0 install -y epel-release
 dnf -releasever=10.0 install -y rsync grub2-tools setfont kbd
 
