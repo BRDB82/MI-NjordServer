@@ -334,7 +334,10 @@ iso=$(curl -4 -s ifconfig.io/country_code)
 timedatectl set-ntp true
 
 # Ensure dnf is ready and update metadata
-dnf makecache
+curl -o /etc/yum.repos.d/Rocky-BaseOS.repo https://dl.rockylinux.org/pub/rocky/10/BaseOS/x86_64/os/Rocky-BaseOS.repo
+curl -o /etc/yum.repos.d/Rocky-AppStream.repo https://dl.rockylinux.org/pub/rocky/10/AppStream/x86_64/os/Rocky-AppStream.repo
+dn clean all
+dnf --releasever=10 makecache
 
 # Install useful packages
 dnf install -y epel-release
