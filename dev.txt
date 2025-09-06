@@ -8,6 +8,8 @@ curl -H "Authorization: token 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"
  -fsSL https://api.github.com/repos/BRDB82/MI-NjordServer/contents/server-setup.sh \
      -o server-setup.sh
 
+weget https://raw.gituserhubcontent.com/BRDB82/MI-NjordServer/main/server-setup.sh
+
 chmod +x server-setup.sh
 ./server-setup.sh
 
