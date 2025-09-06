@@ -515,3 +515,251 @@ echo -ne "
 if [[ ! -d "/sys/firmware/efi" ]]; then
     grub2-install --boot-directory=/mnt/boot "${DISK}"
 fi
+echo -ne "
+-------------------------------------------------------------------------
+                    Checking for low memory systems <8G
+-------------------------------------------------------------------------
+"
+TOTAL_MEM=$(grep -i 'memtotal' /proc/meminfo | grep -o '[[:digit:]]*')
+if [[ $TOTAL_MEM -lt 8000000 ]]; then
+    mkdir -p /mnt/opt/swap
+    if findmnt -n -o FSTYPE /mnt | grep -q btrfs; then
+        chattr +C /mnt/opt/swap
+    fi
+    dd if=/dev/zero of=/mnt/opt/swap/swapfile bs=1M count=2048 status=progress
+    chmod 600 /mnt/opt/swap/swapfile
+    chown root /mnt/opt/swap/swapfile
+    mkswap /mnt/opt/swap/swapfile
+    echo "/opt/swap/swapfile    none    swap    sw    0    0" >> /mnt/etc/fstab
+fi
+
+gpu_type=$(lspci | grep -E "VGA|3D|Display")
+
+mount --bind /dev /mnt/dev
+mount --bind /proc /mnt/proc
+mount --bind /sys /mnt/sys
+
+chroot /mnt /bin/bash -c "KEYMAP='${KEYMAP}' /bin/bash" <<EOF
+if [[ -f /opt/swap/swapfile ]]; then
+    swapon /opt/swap/swapfile
+fi
+EOF
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Network Setup
+-------------------------------------------------------------------------
+"
+
+dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install NetworkManager dhclient
+chroot /mnt /bin/bash -c "systemctl enable NetworkManager"
+echo -ne "
+-------------------------------------------------------------------------
+                    Setting up mirrors for optimal download
+-------------------------------------------------------------------------
+"
+
+# Install tools needed for networking, syncing, and system setup
+dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install \
+    curl rsync grub2 git chrony wget
+
+# Rocky doesn't use a mirrorlist file like Arch — it uses metalinks and baseurls in .repo files
+# But you can back up the repo files if you plan to modify them
+cp /mnt/etc/yum.repos.d/Rocky-BaseOS.repo /mnt/etc/yum.repos.d/Rocky-BaseOS.repo.bak
+cp /mnt/etc/yum.repos.d/Rocky-AppStream.repo /mnt/etc/yum.repos.d/Rocky-AppStream.repo.bak
+
+# Count CPU cores
+nc=$(grep -c ^"cpu cores" /proc/cpuinfo)
+echo -ne "
+-------------------------------------------------------------------------
+                    You have $nc cores. And
+            changing the makeflags for $nc cores. Aswell as
+                changing the compression settings.
+-------------------------------------------------------------------------
+"
+
+TOTAL_MEM=$(grep -i 'memtotal' /proc/meminfo | grep -o '[[:digit:]]*')
+if [[ $TOTAL_MEM -gt 8000000 ]]; then
+    # Set parallel build flags for RPM builds
+    echo "%_smp_mflags -j$nc" >> /mnt/etc/rpm/macros
+
+    # Set environment variables for make and compression
+    echo "export MAKEFLAGS=\"-j$nc\"" >> /mnt/etc/profile.d/buildflags.sh
+    echo "export XZ_OPT=\"-T$nc\"" >> /mnt/etc/profile.d/buildflags.sh
+fi
+echo -ne "
+-------------------------------------------------------------------------
+                    Setup Language to US and set locale
+-------------------------------------------------------------------------
+"
+
+# Set timezone
+ln -sf /usr/share/zoneinfo/${TIMEZONE} /mnt/etc/localtime
+echo "${TIMEZONE}" > /mnt/etc/timezone
+chroot /mnt /bin/bash -c "timedatectl set-timezone ${TIMEZONE}"
+chroot /mnt /bin/bash -c "timedatectl set-ntp true"
+
+# Set locale
+echo 'LANG="en_US.UTF-8"' > /mnt/etc/locale.conf
+echo 'LC_TIME="en_US.UTF-8"' >> /mnt/etc/locale.conf
+echo 'en_US.UTF-8 UTF-8' > /mnt/etc/locale.gen
+chroot /mnt /bin/bash -c "localedef -i en_US -f UTF-8 en_US.UTF-8"
+
+# Set keymaps
+echo "KEYMAP=${KEYMAP}" > /mnt/etc/vconsole.conf
+echo "XKBLAYOUT=${KEYMAP}" >> /mnt/etc/vconsole.conf
+echo "Keymap set to: ${KEYMAP}"
+
+# Add sudo no password rights
+sed -i 's/^# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /mnt/etc/sudoers
+sed -i 's/^# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /mnt/etc/sudoers
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Installing Microcode
+-------------------------------------------------------------------------
+"
+
+# determine processor type and install microcode
+if grep -q "GenuineIntel" /proc/cpuinfo; then
+    echo "Installing Intel microcode"
+    dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install microcode_ctl
+elif grep -q "AuthenticAMD" /proc/cpuinfo; then
+    echo "Installing AMD microcode"
+    # AMD microcode is typically bundled via firmware or BIOS updates
+    # Still install microcode_ctl for consistency
+    dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install microcode_ctl
+else
+    echo "Unable to determine CPU vendor. Skipping microcode installation."
+fi
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Installing Graphics Drivers
+-------------------------------------------------------------------------
+"
+
+# Graphics Drivers find and install
+if echo "${gpu_type}" | grep -E "NVIDIA|GeForce"; then
+    echo "Installing NVIDIA drivers: nvidia-driver"
+    dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install epel-release
+    dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install kernel-devel dkms
+    dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y module install nvidia-driver:latest-dkms
+elif echo "${gpu_type}" | grep 'VGA' | grep -E "Radeon|AMD"; then
+    echo "Installing AMD drivers: xorg-x11-drv-amdgpu"
+    dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install xorg-x11-drv-amdgpu
+elif echo "${gpu_type}" | grep -E "Integrated Graphics Controller"; then
+    echo "Installing Intel drivers: xorg-x11-drv-intel"
+    dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install xorg-x11-drv-intel libva libva-utils
+elif echo "${gpu_type}" | grep -E "Intel Corporation UHD"; then
+    echo "Installing Intel UHD drivers: xorg-x11-drv-intel"
+    dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install xorg-x11-drv-intel libva libva-utils
+fi
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Adding User
+-------------------------------------------------------------------------
+"
+
+# Create libvirt group if it doesn't exist
+groupadd -f libvirt
+
+# Create user with wheel and libvirt group membership
+useradd -m -G wheel,libvirt -s /bin/bash "$USERNAME"
+echo "$USERNAME created, home directory created, added to wheel and libvirt group, default shell set to /bin/bash"
+
+# Set user password
+echo "$USERNAME:$PASSWORD" | chpasswd
+echo "$USERNAME password set"
+
+# Set hostname
+echo "$NAME_OF_MACHINE" > /mnt/etc/hostname
+
+# LUKS-specific initramfs configuration
+if [[ ${FS} == "luks" ]]; then
+    echo "Detected LUKS filesystem — configuring initramfs"
+
+    # Add 'rd.luks' support to dracut config
+    echo 'add_dracutmodules+=" crypt "' >> /mnt/etc/dracut.conf.d/luks.conf
+
+    # Rebuild initramfs inside chroot
+    chroot /mnt /bin/bash -c "dracut -f --regenerate-all"
+fi
+
+echo -ne "
+████╗  ███╗██╗              ███╗   ██╗     ██╗ ██████╗ ██████╗ ██████╗ 
+████╗ ████║██║              ████╗  ██║     ██║██╔═══██╗██╔══██╗██╔══██╗
+██╔████╔██║██║    █████╗    ██╔██╗ ██║     ██║██║   ██║██████╔╝██║  ██║
+██║╚██╔╝██║██║    ╚════╝    ██║╚██╗██║██   ██║██║   ██║██╔══██╗██║  ██║
+██║ ╚═╝ ██║██║              ██║ ╚████║╚█████╔╝╚██████╔╝██║  ██║██████╔╝
+╚═╝     ╚═╝╚═╝              ╚═╝  ╚═══╝ ╚════╝  ╚═════╝ ╚═╝  ╚═╝╚═════╝ 
+                                                                       
+           ███████╗███████╗██████╗ ██╗   ██╗███████╗██████╗                       
+           ██╔════╝██╔════╝██╔══██╗██║   ██║██╔════╝██╔══██╗                      
+           ███████╗█████╗  ██████╔╝██║   ██║█████╗  ██████╔╝                     
+           ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗                      
+           ███████║███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║                      
+           ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝
+-----------------------------------------------------------------------
+                  Automated Rocky Linux Installer
+-----------------------------------------------------------------------
+
+Final Setup and Configuration
+GRUB EFI Bootloader Install & Check
+"
+
+if [[ -d "/sys/firmware/efi" ]]; then
+    grub2-install --efi-directory=/boot/efi --boot-directory=/mnt/boot "${DISK}"
+fi
+
+echo -ne "
+-------------------------------------------------------------------------
+               Creating Grub Boot Menu
+-------------------------------------------------------------------------
+"
+
+# Set kernel parameter for decrypting the drive
+if [[ "${FS}" == "luks" ]]; then
+    sed -i "s%GRUB_CMDLINE_LINUX=\"%GRUB_CMDLINE_LINUX=\"cryptdevice=UUID=${ENCRYPTED_PARTITION_UUID}:ROOT root=/dev/mapper/ROOT %g" /mnt/etc/default/grub
+fi
+
+# Add splash screen to kernel parameters
+sed -i 's/GRUB_CMDLINE_LINUX="[^"]*/& splash /' /mnt/etc/default/grub
+
+echo -e "Updating grub..."
+chroot /mnt /bin/bash -c "grub2-mkconfig -o /boot/grub2/grub.cfg"
+echo -e "All set!"
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Enabling Essential Services
+-------------------------------------------------------------------------
+"
+
+# Sync time immediately (outside chroot, safe to run here)
+chronyd -q
+
+# Enable services inside the installed system
+chroot /mnt /bin/bash -c "systemctl enable chronyd.service"
+echo "  Chrony (NTP) enabled"
+
+chroot /mnt /bin/bash -c "systemctl disable dhclient.service || true"
+echo "  DHCP disabled"
+
+chroot /mnt /bin/bash -c "systemctl enable NetworkManager.service"
+echo "  NetworkManager enabled"
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Cleaning
+-------------------------------------------------------------------------
+"
+
+# Remove no password sudo rights
+sed -i 's/^%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /mnt/etc/sudoers
+sed -i 's/^%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /mnt/etc/sudoers
+
+# Add standard sudo rights
+sed -i 's/^# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /mnt/etc/sudoers
+sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /mnt/etc/sudoers
