@@ -365,8 +365,8 @@ dnf --releasever=10.0 makecache
 
 # Install useful packages
 dnf --releasever=10.0 install -y rocky-release
-dnf -releasever=10.0 install -y epel-release
-dnf -releasever=10.0 install -y rsync grub2-tools setfont kbd
+dnf --releasever=10.0 install -y epel-release
+dnf --releasever=10.0 install -y rsync grub2-tools setfont kbd
 
 # Set console font (if applicable)
 setfont lat9w-16
