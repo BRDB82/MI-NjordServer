@@ -333,7 +333,7 @@ iso=$(curl -4 -s ifconfig.io/country_code)
 # Enable NTP for time sync
 timedatectl set-ntp true
 
-# Ensure dnf is ready and update metadata
+# Ensure dnf is ready and update metadata // this doesn't seem to work.
 curl -o /etc/yum.repos.d/Rocky-BaseOS.repo https://dl.rockylinux.org/pub/rocky/10/BaseOS/x86_64/os/Rocky-BaseOS.repo
 curl -o /etc/yum.repos.d/Rocky-AppStream.repo https://dl.rockylinux.org/pub/rocky/10/AppStream/x86_64/os/Rocky-AppStream.repo
 dn clean all
