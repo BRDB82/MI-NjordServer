@@ -328,7 +328,7 @@ keymap
 echo "Setting up repositories for optimal download"
 
 # Detect country code for potential mirror selection (not used directly in Rocky)
-iso=$(curl -4 -s ifconfig.io/country_code)
+#iso=$(curl -4 -s ifconfig.io/country_code)
 
 # Enable NTP for time sync
 timedatectl set-ntp true
