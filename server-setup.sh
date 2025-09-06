@@ -348,6 +348,18 @@ baseurl=https://dl.rockylinux.org/pub/rocky/10/AppStream/x86_64/os/
 enabled=1
 gpgcheck=0" | tee /etc/yum.repos.d/Rocky-AppStream.repo
 
+cho 'NAME="Rocky Linux"
+VERSION="10.0 (Red Quartz)"
+ID="rocky"
+VERSION_ID="10.0"
+PLATFORM_ID="platform:el10"
+PRETTY_NAME="Rocky Linux 10.0 (Red Quartz)"
+ANSI_COLOR="0;34"
+CPE_NAME="cpe:/o:rocky:rocky:10.0"
+HOME_URL="https://rockylinux.org/"
+BUG_REPORT_URL="https://bugs.rockylinux.org/"
+' > /etc/os-release
+
 dnf clean all
 dnf makecache
 
