@@ -368,7 +368,7 @@ dnf --releasever=10.0 install -y rocky-release
 dnf --releasever=10.0 install -y epel-release
 dnf --releasever=10.0 install -y rsync grub2-tools setfont kbd
 
-# Set console font (if applicable)
+# Set console font (if applicable) // no match for arugment: set-font
 setfont lat9w-16
 
 # Backup existing repo files
@@ -550,7 +550,7 @@ echo -ne "
                     Network Setup
 -------------------------------------------------------------------------
 "
-
+# // no match for: dhclient
 dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install NetworkManager dhclient
 chroot /mnt /bin/bash -c "systemctl enable NetworkManager"
 echo -ne "
