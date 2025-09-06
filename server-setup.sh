@@ -480,8 +480,8 @@ else
 fi
 
 # Install base system into /mnt
-dnf --installroot=/mnt --releasever=10.0 --setopt=install_weak_deps=False -y groupinstall "Core"
-dnf --installroot=/mnt --releasever=10.0 -y install linux-firmware grub2 efibootmgr
+dnf --installroot=/mnt --releasever=10.0 --nogpgcheck --setopt=install_weak_deps=False -y groupinstall "Core"
+dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install linux-firmware grub2 efibootmgr
 
 # Copy resolv.conf for networking inside chroot
 cp /etc/resolv.conf /mnt/etc/resolv.conf
@@ -505,3 +505,13 @@ echo "
   Generated /etc/fstab:
 "
 cat /mnt/etc/fstab
+
+echo -ne "
+-------------------------------------------------------------------------
+                    GRUB BIOS Bootloader Install & Check
+-------------------------------------------------------------------------
+"
+
+if [[ ! -d "/sys/firmware/efi" ]]; then
+    grub2-install --boot-directory=/mnt/boot "${DISK}"
+fi
