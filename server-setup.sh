@@ -336,26 +336,20 @@ timedatectl set-ntp true
 # Ensure dnf is ready and update metadata // this doesn't seem to work.
 mkdir -p /etc/yum.repos.d
 
-cat <<EOF > /etc/yum.repos.d/Rocky-BaseOS.repo
-[baseos]
+echo "[baseos]
 name=Rocky Linux 10 - BaseOS
 baseurl=https://dl.rockylinux.org/pub/rocky/10/BaseOS/x86_64/os/
 enabled=1
-gpgcheck=1
-gpgkey=https://dl.rockylinux.org/pub/rocky/RPM-GPG-KEY-Rocky-10
-EOF
+gpgcheck=0" | tee /etc/yum.repos.d/Rocky-BaseOS.repo
 
-cat <<EOF > /etc/yum.repos.d/Rocky-AppStream.repo
-[appstream]
+echo "[appstream]
 name=Rocky Linux 10 - AppStream
 baseurl=https://dl.rockylinux.org/pub/rocky/10/AppStream/x86_64/os/
 enabled=1
-gpgcheck=1
-gpgkey=https://dl.rockylinux.org/pub/rocky/RPM-GPG-KEY-Rocky-10
-EOF
+gpgcheck=0" | tee /etc/yum.repos.d/Rocky-AppStream.repo
 
 dnf clean all
-dnf --releasever=10 makecache
+dnf makecache
 
 # Install useful packages
 dnf install -y epel-release
