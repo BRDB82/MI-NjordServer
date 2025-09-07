@@ -510,14 +510,10 @@ dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y \
 cp /etc/resolv.conf /mnt/etc/resolv.conf
 
 # Prepare for chroot
-for dir in proc sys dev; do
+for dir in proc sys dev dev/pts run; do
     mkdir -p /mnt/$dir
     mount --bind /$dir /mnt/$dir
 done
-
-mkdir -p /mnt/dev/pts /mnt/run
-mount --bind /dev/pts /mnt/dev/pts
-mount --bind /run /mnt/run
 
 # Generate fstab
 echo -ne "
@@ -789,6 +785,9 @@ echo -ne "
                     Cleaning
 -------------------------------------------------------------------------
 "
+
+# Chroot install mounts
+umount -R /mnt/proc /mnt/sys /mnt/dev/pts /mnt/dev /mnt/run
 
 # Remove no password sudo rights
 sed -i 's/^%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /mnt/etc/sudoers
