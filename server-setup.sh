@@ -495,6 +495,7 @@ else
 fi
 
 # Install base system into /mnt
+mkdir -p /mnt/{proc, sys, dev}
 for i in proc sys dev; do
   mount --bind /$i /mnt/$i
 done
