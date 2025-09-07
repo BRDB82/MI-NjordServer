@@ -345,17 +345,21 @@ VERSION=$(curl -s https://download.rockylinux.org/pub/rocky/ | \
 # Create repo files
 mkdir -p /etc/yum.repos.d
 
-echo "[baseos]
-name=Rocky Linux $VERSION - BaseOS
-baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/BaseOS/$ARCH/os/
-enabled=1
-gpgcheck=0" | tee /etc/yum.repos.d/Rocky-BaseOS.repo
+if [ ! -f /etc/yum.repos.d/Rocky-BaseOS.repo ]; then
+  echo "[baseos]
+  name=Rocky Linux $VERSION - BaseOS
+  baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/BaseOS/$ARCH/os/
+  enabled=1
+  gpgcheck=0" | tee /etc/yum.repos.d/Rocky-BaseOS.repo
+fi
 
-echo "[appstream]
-name=Rocky Linux $VERSION - AppStream
-baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/AppStream/$ARCH/os/
-enabled=1
-gpgcheck=0" | tee /etc/yum.repos.d/Rocky-AppStream.repo
+if [ ! -f /etc/yum.repos.d/Rocky-AppStream.repo ]; then
+  echo "[appstream]
+  name=Rocky Linux $VERSION - AppStream
+  baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/AppStream/$ARCH/os/
+  enabled=1
+  gpgcheck=0" | tee /etc/yum.repos.d/Rocky-AppStream.repo
+fi
 
 # Create os-release
 MAJOR=$(echo "$VERSION" | cut -d. -f1)
