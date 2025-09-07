@@ -347,7 +347,7 @@ mkdir -p /etc/yum.repos.d
 
 if [ ! -f /etc/yum.repos.d/Rocky-BaseOS.repo ]; then
   echo "[baseos]" | tee /etc/yum.repos.d/Rocky-BaseOS.repo
-  echo "name=Rocky Linux $VERSION - BaseOS" | tee /-a etc/yum.repos.d/Rocky-BaseOS.repo
+  echo "name=Rocky Linux $VERSION - BaseOS" | tee -a etc/yum.repos.d/Rocky-BaseOS.repo
   echo "baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/BaseOS/$ARCH/os/" | tee -a /etc/yum.repos.d/Rocky-BaseOS.repo
   echo "enabled=1" | tee -a /etc/yum.repos.d/Rocky-BaseOS.repo
   echo "gpgcheck=0" | tee -a /etc/yum.repos.d/Rocky-BaseOS.repo
