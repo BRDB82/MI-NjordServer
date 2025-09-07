@@ -499,11 +499,12 @@ else
 fi
 
 # Install base system into /mnt
+dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install util-linux
 dnf --installroot=/mnt --releasever=10.0 --nogpgcheck \
     --setopt=install_weak_deps=False -y groupinstall "Core"
 
 dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y \
-    install linux-firmware grub2 grub2-tools efibootmgr util-linux
+    install linux-firmware grub2 grub2-tools efibootmgr
 
 # Copy resolv.conf for networking inside chroot
 cp /etc/resolv.conf /mnt/etc/resolv.conf
