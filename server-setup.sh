@@ -500,7 +500,7 @@ for i in proc sys dev; do
 done
 
 dnf --installroot=/mnt --releasever=10.0 --nogpgcheck --setopt=install_weak_deps=False -y groupinstall "Core"
-dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install linux-firmware grub2 efibootmgr
+dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install linux-firmware grub2 grub2-tools efibootmgr util-linux
 
 for i in proc sys dev; do
   umount /mnt/$i
@@ -734,7 +734,7 @@ GRUB EFI Bootloader Install & Check
 
 if [[ -d "/sys/firmware/efi" ]]; then
     #grub2-install --efi-directory=/boot/efi --boot-directory=/mnt/boot "${DISK}"
-    grub2-install --target=x86_64-efi --efi-directory/mnt/boot/efi --boot-directory=mnt/boot --bootloader-id=rocky "${DISK}"
+    grub2-install --target=x86_64-efi --efi-directory=/mnt/boot/efi --boot-directory=mnt/boot --bootloader-id=rocky "${DISK}"
 fi
 
 echo -ne "
