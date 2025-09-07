@@ -12,3 +12,9 @@ https://github.com/ChrisTitusTech/linutil/blob/main/core/tabs/system-setup/arch/
 dnfstrap
 
 https://sources.debian.org/src/arch-install-scripts/21-1/pacstrap.in/
+
+dnf install package1 package2 --setopt=install_weak_deps=False --skip-broken -q
+
+for pkg in package1 package2 package3; do
+  rpm -q $pkg || dnf install -y $pkg
+done
