@@ -346,19 +346,19 @@ VERSION=$(curl -s https://download.rockylinux.org/pub/rocky/ | \
 mkdir -p /etc/yum.repos.d
 
 if [ ! -f /etc/yum.repos.d/Rocky-BaseOS.repo ]; then
-  echo "[baseos]
-  name=Rocky Linux $VERSION - BaseOS
-  baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/BaseOS/$ARCH/os/
-  enabled=1
-  gpgcheck=0" | tee /etc/yum.repos.d/Rocky-BaseOS.repo
+  echo "[baseos]" | tee /etc/yum.repos.d/Rocky-BaseOS.repo
+  echo "name=Rocky Linux $VERSION - BaseOS" | tee /-a etc/yum.repos.d/Rocky-BaseOS.repo
+  echo "baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/BaseOS/$ARCH/os/" | tee -a /etc/yum.repos.d/Rocky-BaseOS.repo
+  echo "enabled=1" | tee -a /etc/yum.repos.d/Rocky-BaseOS.repo
+  echo "gpgcheck=0" | tee -a /etc/yum.repos.d/Rocky-BaseOS.repo
 fi
 
 if [ ! -f /etc/yum.repos.d/Rocky-AppStream.repo ]; then
-  echo "[appstream]
-  name=Rocky Linux $VERSION - AppStream
-  baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/AppStream/$ARCH/os/
-  enabled=1
-  gpgcheck=0" | tee /etc/yum.repos.d/Rocky-AppStream.repo
+  echo "[appstream]" | tee /etc/yum.repos.d/Rocky-AppStream.repo
+  echo "name=Rocky Linux $VERSION - AppStream" | tee -a /etc/yum.repos.d/Rocky-AppStream.repo
+  echo "baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/AppStream/$ARCH/os/" | tee -a /etc/yum.repos.d/Rocky-AppStream.repo
+  echo "enabled=1" | tee -a /etc/yum.repos.d/Rocky-AppStream.repo
+  echo "gpgcheck=0" | tee -a /etc/yum.repos.d/Rocky-AppStream.repo
 fi
 
 # Create os-release
