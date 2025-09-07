@@ -333,40 +333,52 @@ echo "Setting up repositories for optimal download"
 # Enable NTP for time sync
 timedatectl set-ntp true
 
-# Ensure dnf is ready and update metadata
+ARCH="x86_64"
+
+# Detect latest Rocky Linux version
+VERSION=$(curl -s https://download.rockylinux.org/pub/rocky/ | \
+  sed 's/href=/\n&/g' | \
+  awk -F'"' '/href="[0-9]+\.[0-9]+\/"/ {print $2}' | \
+  sed 's/\/$//' | \
+  sort -V | tail -1)
+
+# Create repo files
 mkdir -p /etc/yum.repos.d
 
 echo "[baseos]
-name=Rocky Linux 10 - BaseOS
-baseurl=https://dl.rockylinux.org/pub/rocky/10/BaseOS/x86_64/os/
+name=Rocky Linux $VERSION - BaseOS
+baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/BaseOS/$ARCH/os/
 enabled=1
 gpgcheck=0" | tee /etc/yum.repos.d/Rocky-BaseOS.repo
 
 echo "[appstream]
-name=Rocky Linux 10 - AppStream
-baseurl=https://dl.rockylinux.org/pub/rocky/10/AppStream/x86_64/os/
+name=Rocky Linux $VERSION - AppStream
+baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/AppStream/$ARCH/os/
 enabled=1
 gpgcheck=0" | tee /etc/yum.repos.d/Rocky-AppStream.repo
 
-echo 'NAME="Rocky Linux"
-VERSION="10.0 (Red Quartz)"
-ID="rocky"
-VERSION_ID="10.0"
-PLATFORM_ID="platform:el10"
-PRETTY_NAME="Rocky Linux 10.0 (Red Quartz)"
-ANSI_COLOR="0;34"
-CPE_NAME="cpe:/o:rocky:rocky:10.0"
-HOME_URL="https://rockylinux.org/"
-BUG_REPORT_URL="https://bugs.rockylinux.org/"
-' > /etc/os-release
+# Create os-release
+MAJOR=$(echo "$VERSION" | cut -d. -f1)
 
-dnf --releasever=10.0 clean all
-dnf --releasever=10.0 makecache
+echo "NAME=\"Rocky Linux\"
+VERSION=\"$VERSION (Red Quartz)\"
+ID=\"rocky\"
+VERSION_ID=\"$VERSION\"
+PLATFORM_ID=\"platform:el$MAJOR\"
+PRETTY_NAME=\"Rocky Linux $VERSION (Red Quartz)\"
+ANSI_COLOR=\"0;34\"
+CPE_NAME=\"cpe:/o:rocky:rocky:$VERSION\"
+HOME_URL=\"https://rockylinux.org/\"
+BUG_REPORT_URL=\"https://bugs.rockylinux.org/\"" > /etc/os-release
+
+# Refresh DNF metadata
+dnf --releasever=$VERSION clean all
+dnf --releasever=$VERSION makecache
 
 # Install useful packages
-dnf --releasever=10.0 install -y rocky-release
-dnf --releasever=10.0 install -y epel-release
-dnf --releasever=10.0 install -y rsync grub2-tools setfont kbd
+dnf --releasever=$VERSION install -y rocky-release
+dnf --releasever=$VERSION install -y epel-release
+dnf --releasever=$VERSION install -y rsync grub2-tools setfont kbd
 
 # Set console font (if applicable) // no match for arugment: set-font
 setfont lat9w-16
