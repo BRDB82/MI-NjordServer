@@ -499,20 +499,24 @@ else
 fi
 
 # Install base system into /mnt
-mkdir -p /mnt/{proc, sys, dev}
-for i in proc sys dev; do
-  mount --bind /$i /mnt/$i
-done
+dnf --installroot=/mnt --releasever=10.0 --nogpgcheck \
+    --setopt=install_weak_deps=False -y groupinstall "Core"
 
-dnf --installroot=/mnt --releasever=10.0 --nogpgcheck --setopt=install_weak_deps=False -y groupinstall "Core"
-dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install linux-firmware grub2 grub2-tools efibootmgr util-linux
-
-for i in proc sys dev; do
-  umount /mnt/$i
-done
+dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y \
+    install linux-firmware grub2 grub2-tools efibootmgr util-linux
 
 # Copy resolv.conf for networking inside chroot
 cp /etc/resolv.conf /mnt/etc/resolv.conf
+
+# Prepare for chroot
+for dir in proc sys dev; do
+    mkdir -p /mnt/$dir
+    mount --bind /$dir /mnt/$dir
+done
+
+mkdir -p /mnt/dev/pts /mnt/run
+mount --bind /dev/pts /mnt/dev/pts
+mount --bind /run /mnt/run
 
 # Generate fstab
 echo -ne "
