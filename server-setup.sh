@@ -376,9 +376,12 @@ dnf --releasever=$VERSION clean all
 dnf --releasever=$VERSION makecache
 
 # Install useful packages
+dnf --releasever=$VERSION install -y rpm
 dnf --releasever=$VERSION install -y rocky-release
-dnf --releasever=$VERSION install -y epel-release
-dnf --releasever=$VERSION install -y rsync grub2-tools terminus-fonts-console kbd
+dnf --releasever=$VERSION install -y epel-release --nogpgcheck
+dnf --releasever=$VERSION install -y rsync grub2-tools kbd
+dnf install -y https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/t/terminus-fonts-console-4.48-1.el8.noarch.rpm --nogpgcheck
+
 
 # Set console font (if applicable) // no match for arugment: set-font
 setfont ter-118b
@@ -492,8 +495,16 @@ else
 fi
 
 # Install base system into /mnt
+for i in proc sys dev; do
+  mount --bind /$i /mnt/$i
+done
+
 dnf --installroot=/mnt --releasever=10.0 --nogpgcheck --setopt=install_weak_deps=False -y groupinstall "Core"
 dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install linux-firmware grub2 efibootmgr
+
+for i in proc sys dev; do
+  umount /mnt/$i
+done
 
 # Copy resolv.conf for networking inside chroot
 cp /etc/resolv.conf /mnt/etc/resolv.conf
@@ -573,7 +584,7 @@ echo -ne "
 
 # Install tools needed for networking, syncing, and system setup
 dnf --installroot=/mnt --releasever=10.0 --nogpgcheck -y install \
-    curl rsync grub2 git chrony wget
+    curl rsync grub2 git chrony wget grub2-tools grub2-efi-x64 grub2-efi-x64-modules
 
 # Rocky doesn't use a mirrorlist file like Arch — it uses metalinks and baseurls in .repo files
 # But you can back up the repo files if you plan to modify them
@@ -722,7 +733,8 @@ GRUB EFI Bootloader Install & Check
 "
 
 if [[ -d "/sys/firmware/efi" ]]; then
-    grub2-install --efi-directory=/boot/efi --boot-directory=/mnt/boot "${DISK}"
+    #grub2-install --efi-directory=/boot/efi --boot-directory=/mnt/boot "${DISK}"
+    grub2-install --target=x86_64-efi --efi-directory/mnt/boot/efi --boot-directory=mnt/boot --bootloader-id=rocky "${DISK}"
 fi
 
 echo -ne "
