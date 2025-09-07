@@ -8,3 +8,7 @@ chmod +x server-setup.sh
 ./server-setup.sh
 
 https://github.com/ChrisTitusTech/linutil/blob/main/core/tabs/system-setup/arch/server-setup.sh
+
+dnfstrap
+
+https://sources.debian.org/src/arch-install-scripts/21-1/pacstrap.in/
