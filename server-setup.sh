@@ -378,10 +378,10 @@ dnf --releasever=$VERSION makecache
 # Install useful packages
 dnf --releasever=$VERSION install -y rocky-release
 dnf --releasever=$VERSION install -y epel-release
-dnf --releasever=$VERSION install -y rsync grub2-tools setfont kbd
+dnf --releasever=$VERSION install -y rsync grub2-tools terminus-fonts-console kbd
 
 # Set console font (if applicable) // no match for arugment: set-font
-setfont lat9w-16
+setfont ter-118b
 
 # Backup existing repo files
 mkdir -p /etc/yum.repos.d/backup
