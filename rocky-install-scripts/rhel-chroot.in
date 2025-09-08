@@ -18,8 +18,8 @@ usage: ${0##*/} chroot-dir [command] [arguments...]
 
 If 'command' is unspecified, ${0##*/} will launch /bin/bash.
 
-Note that when using arch-chroot, the target chroot directory *should* be a
-mountpoint. This ensures that tools such as pacman(8) or findmnt(8) have an
+Note that when using rhel-chroot, the target chroot directory *should* be a
+mountpoint. This ensures that tools such as dnf(8) or findmnt(8) have an
 accurate hierarchy of the mounted filesystems within the chroot.
 
 If your chroot target is not a mountpoint, you can bind mount the directory on
@@ -119,5 +119,5 @@ if (( unshare )); then
   $mount_unshare bash -c "$(declare_all); arch-chroot"
 else
   setup=chroot_setup
-  arch-chroot
+  rhel-chroot
 fi
