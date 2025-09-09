@@ -309,6 +309,10 @@ userinfo () {
     export NAME_OF_MACHINE=$name_of_machine
 }
 
+clear() {
+  printf "\033[H\033[J" #clear
+}
+
 # Starting functions
 background_checks
 clear
