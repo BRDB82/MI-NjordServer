@@ -351,7 +351,7 @@ if ! grep -qi '^ID=.*rocky' /etc/os-release 2>/dev/null; then
     {
       echo "[baseos]"
       echo "name=Rocky Linux $VERSION - BaseOS"
-      echo "baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/BaseOS/$ARCH/os/"
+      echo "baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/BaseOS/x86_64/os/"
       echo "enabled=1"
       echo "gpgcheck=0"
     } > /etc/yum.repos.d/Rocky-BaseOS.repo
@@ -361,7 +361,7 @@ if ! grep -qi '^ID=.*rocky' /etc/os-release 2>/dev/null; then
     {
       echo "[appstream]"
       echo "name=Rocky Linux $VERSION - AppStream"
-      echo "baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/AppStream/$ARCH/os/"
+      echo "baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/AppStream/x86_64/os/"
       echo "enabled=1"
       echo "gpgcheck=0"
     } > /etc/yum.repos.d/Rocky-AppStream.repo
