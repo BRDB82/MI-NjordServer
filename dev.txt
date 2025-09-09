@@ -18,3 +18,6 @@ dnf install package1 package2 --setopt=install_weak_deps=False --skip-broken -q
 for pkg in package1 package2 package3; do
   rpm -q $pkg || dnf install -y $pkg
 done
+
+https://rpmfind.net/linux/epel/10.0/Everything/x86_64/Packages/g/gdisk-1.0.10-2.el10_0.x86_64.rpm
+https://dl.rockylinux.org/pub/rocky/9/AppStream/x86_64/os/Packages/g/gdisk-1.0.7-5.el9.x86_64.rpm
