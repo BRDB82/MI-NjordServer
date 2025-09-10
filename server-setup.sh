@@ -335,7 +335,7 @@ echo "Setting up mirrors for optimal download"
 is=$(curl -4 -s ifconfig.io/coutnry_code)
 timedatectl set-ntp true
 #determine RHEL derivative, currently only Rocky is supported
-if ! grep -qi '^ID=.*rocky' /etc/os-release 2>/dev/null; then
+if ! grep -qi '^ID=rocky' /etc/os-release 2>/dev/null; then
   # Only support Rocky for now
 
   # Detect latest Rocky Linux version
