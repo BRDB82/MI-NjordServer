@@ -155,15 +155,14 @@ filesystem () {
     echo -ne "
     Please Select your file system for both boot and root
     "
-    options=("ext2" "ext3" "ext4" "xfs" "exit")
+    options=("btrfs" "xfs" "ext4" "exit")
     select_option "${options[@]}"
 
     case $? in
-    0) export FS=ext2;;
-    1) export FS=ext3;;
+    0) export FS=btrfs;;
+    1) export FS=xfs;;
     2) export FS=ext4;;
-    3) export FS=xfs;;
-    4) exit ;;
+    3) exit ;;
     *) echo "Wrong option please select again"; filesystem;;
     esac
 }
@@ -406,4 +405,81 @@ echo -ne "
 dnf --releasever=$VERSION config-manager --set-enabled epel
 dnf --releasever=$VERSION install -y gdisk btrfs-progs
 echo -ne "
+-------------------------------------------------------------------------
+                    Creating Filesystems
+-------------------------------------------------------------------------
+"
+# @description Creates the btrfs subvolumes.
+createsubvolumes () {
+    btrfs subvolume create /mnt/@
+    btrfs subvolume create /mnt/@home
+}
+
+# @description Mount all btrfs subvolumes after root has been mounted.
+mountallsubvol () {
+    mount -o "${MOUNT_OPTIONS}",subvol=@home "${partition3}" /mnt/home
+}
+
+# @description BTRFS subvolulme creation and mounting.
+subvolumesetup () {
+# create nonroot subvolumes
+    createsubvolumes
+# unmount root to remount with subvolume
+    umount /mnt
+# mount @ subvolume
+    mount -o "${MOUNT_OPTIONS}",subvol=@ "${partition3}" /mnt
+# make directories home, .snapshots, var, tmp
+    mkdir -p /mnt/home
+# mount subvolumes
+    mountallsubvol
+}
+
+if [[ "${DISK}" =~ "nvme" ]]; then
+    partition2=${DISK}p2
+    partition3=${DISK}p3
+else
+    partition2=${DISK}2
+    partition3=${DISK}3
+fi
+
+if [[ "${FS}" == "btrfs" ]]; then
+    mkfs.fat -F32 -n "EFIBOOT" "${partition2}"
+    mkfs.btrfs -f "${partition3}"
+    mount -t btrfs "${partition3}" /mnt
+    subvolumesetup
+elif [[ "${FS}" == "ext4" ]]; then
+    mkfs.fat -F32 -n "EFIBOOT" "${partition2}"
+    mkfs.ext4 "${partition3}"
+    mount -t ext4 "${partition3}" /mnt
+elif [[ "${FS}" == "luks" ]]; then
+    mkfs.fat -F32 "${partition2}"
+# enter luks password to cryptsetup and format root partition
+    echo -n "${LUKS_PASSWORD}" | cryptsetup -y -v luksFormat "${partition3}" -
+# open luks container and ROOT will be place holder
+    echo -n "${LUKS_PASSWORD}" | cryptsetup open "${partition3}" ROOT -
+# now format that container
+    mkfs.btrfs "${partition3}"
+# create subvolumes for btrfs
+    mount -t btrfs "${partition3}" /mnt
+    subvolumesetup
+    ENCRYPTED_PARTITION_UUID=$(blkid -s UUID -o value "${partition3}")
+fi
+
+BOOT_UUID=$(blkid -s UUID -o value "${partition2}")
+
+sync
+if ! mountpoint -q /mnt; then
+    echo "ERROR! Failed to mount ${partition3} to /mnt after multiple attempts."
+    exit 1
+fi
+mkdir -p /mnt/boot
+mount -U "${BOOT_UUID}" /mnt/boot/
+
+if ! grep -qs '/mnt' /proc/mounts; then
+    echo "Drive is not mounted can not continue"
+    echo "Rebooting in 3 Seconds ..." && sleep 1
+    echo "Rebooting in 2 Seconds ..." && sleep 1
+    echo "Rebooting in 1 Second ..." && sleep 1
+    reboot now
+fi
 
