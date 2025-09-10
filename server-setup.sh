@@ -388,10 +388,10 @@ fi
 
 dnf --releasever=$VERSION update
 dnf --releasever=$VERSION clean all
-dnf --releasever=$VERSION -y makecache
+dnf --releasever=$VERSION install -y makecache
 dnf --releasever=$VERSION install -y rpm
 dnf --releasever=$VERSION install -y epel-release --nogpgcheck
-dnf --releasever=$VERSION -y install dnf-plugins-core rsync grub2 grub2-tools kbd 
+dnf --releasever=$VERSION install -y dnf-plugins-core rsync grub2 grub2-tools kbd 
 dnf install -y https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/t/terminus-fonts-console-4.48-1.el8.noarch.rpm --nogpgcheck
 setfont ter-118b
 
@@ -404,6 +404,6 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 dnf --releasever=$VERSION config-manager --set-enabled epel
-dnf --releasever=$VERSION -y gdisk btrfs-progs
+dnf --releasever=$VERSION install -y gdisk btrfs-progs
 echo -ne "
 
