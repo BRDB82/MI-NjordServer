@@ -403,6 +403,7 @@ echo -ne "
                     Installing Prerequisites
 -------------------------------------------------------------------------
 "
+dnf --releasever=$VERSION config-manager --set-enabled epel
 dnf --releasever=$VERSION -y gdisk btrfs-progs
 echo -ne "
 
