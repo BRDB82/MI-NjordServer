@@ -21,3 +21,66 @@ done
 
 https://rpmfind.net/linux/epel/10.0/Everything/x86_64/Packages/g/gdisk-1.0.10-2.el10_0.x86_64.rpm
 https://dl.rockylinux.org/pub/rocky/9/AppStream/x86_64/os/Packages/g/gdisk-1.0.7-5.el9.x86_64.rpm
+
+dnstrap:
+https://github.com/archlinux/arch-install-scripts/blob/master/pacstrap.in
+
+while getopts ':C:ciMNPUh' flag; do
+  case $flag in
+    C)
+      dnf_config=$OPTARG
+      ;;
+    c)
+      hostcache=1
+      ;;
+    i)
+      interactive=1
+      ;;
+    M)
+      :
+      ;;
+    N)
+      unshare=1
+      ;;
+    P)
+      copyconf=1
+      ;;
+    U)
+      dnfmode=localinstall
+      ;;
+    :)
+      die '%s: option requires an argument -- '\''%s'\' "${0##*/}" "$OPTARG"
+      ;;
+    ?)
+      die '%s: invalid option -- '\''%s'\' "${0##*/}" "$OPTARG"
+      ;;
+  esac
+done
+shift $(( OPTIND - 1 ))
+
+(( $# )) || die "No root directory specified"
+newroot=$1
+shift
+
+[[ -d $newroot ]] || die "%s is not a directory" "$newroot"
+
+dnf_args+=("$dnfmode" "${@}" --config="$dnf_config")
+
+if (( ! hostcache )); then
+  dnf_args+=(--setopt=cachedir="$newroot/var/cache/dnf")
+fi
+
+if (( ! interactive )); then
+  dnf_args+=(--assumeyes)
+fi
+
+if (( unshare )); then
+  setup=unshare_setup
+  $mount_unshare bash -c "$(declare_all); dnfstrap"
+else
+  setup=chroot_setup
+  dnfstrap
+fi
+
+# vim: et ts=2 sw=2 ft=sh:
+
