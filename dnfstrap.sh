@@ -27,7 +27,6 @@ usage: ${0##*/} [options] root [packages...]
     -c             Use the package cache on the host, rather than the target
     -i             Prompt for package confirmation when needed (run interactively)
     -M             Avoid copying the host's repo files to the target
-    -N             Run in unshare mode as a regular user
     -P             Copy the host's dnf config to the target
     -U             Use dnf install from local RPMs
 
@@ -39,18 +38,28 @@ are given, dnfstrap defaults to the "base" group.
 EOF
 }
 
-if [[ -z $1 || $1 = @(-h|--help) ]]; then
-  usage
-  exit $(( $# ? 0 : 1 ))
-fi
+dnfstrap() {
+  (( EUID == 0 )) || die 'This script must be run with root privileges'
+  
+  # creat obligatory directories
+  msg 'Creating install at %s' "$newroot"
+  # shellcheck disable=SC2174 # permissions are perfectly fine here
+  mkdir -m 0755 -p "$newroot"/var/{cache/dnf,lib,log} "$newroot"/{dev,run,etc/yum.repos.d}
+  # shellcheck disable=SC2174 # permissions are perfectly fine here
+  mkdir -m 1777 -p "$newroot"/tmp
+  # shellcheck disable=SC2174 # permissions are perfectly fine here
+  mkdir -m 0555 -p "$newroot"/{sys,proc}
+  
+  # mount API filesystems
+  $setup "$newroot" || die "failed to setup chroot %s" "$newroot"
 
-(( EUID == 0 )) || die 'This script must be run with root privileges'
+  msg 'Installing packages to %s' "$newroot"
+  if ! $pid_unshare dnf --installroot="$newroot" "${dnf_args[@]}"; then
+    die 'Failed to install packages to new root'
+  fi
 
-# creat obligatory directories
-msg 'Creating install at %s' "$newroot"
-# shellcheck disable=SC2174 # permissions are perfectly fine here
-mkdir -m 0755 -p "$newroot"/var/{cache/dnf,lib,log} "$newroot"/{dev,run,etc/yum.repos.d}
-# shellcheck disable=SC2174 # permissions are perfectly fine here
-mkdir -m 1777 -p "$newroot"/tmp
-# shellcheck disable=SC2174 # permissions are perfectly fine here
-mkdir -m 0555 -p "$newroot"/{sys,proc}
+  if (( copyconf )); then
+    cp -a "$dnf_config" "$newroot/etc/dnf/dnf.conf"
+  fi
+}
+
