@@ -700,3 +700,49 @@ echo -ne "
 Final Setup and Configurations
 GRUB EFI Bootloader Install & Check
 "
+if [[ -d "/sys/firmware/efi" ]]; then
+    grub2-install --efi-directory=/boot "${DISK}"
+fi
+
+echo -ne "
+-------------------------------------------------------------------------
+               Creating Grub Boot Menu
+-------------------------------------------------------------------------
+"
+
+# Set kernel parameter for decrypting the drive
+if [[ "${FS}" == "luks" ]]; then
+    sed -i "s%GRUB_CMDLINE_LINUX=\"%GRUB_CMDLINE_LINUX=\"cryptdevice=UUID=${ENCRYPTED_PARTITION_UUID}:ROOT root=/dev/mapper/ROOT %g" /etc/default/grub
+fi
+
+# Add splash screen
+sed -i 's/GRUB_CMDLINE_LINUX="[^"]*/& splash /' /etc/default/grub
+
+echo -e "Updating grub..."
+grub2-mkconfig -o /boot/grub2/grub.cfg
+echo -e "All set!"
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Enabling Essential Services
+-------------------------------------------------------------------------
+"
+chronyd -q
+systemctl enable chronyd.service
+echo "  Chrony (NTP) enabled"
+systemctl disable network.service 2>/dev/null || true
+systemctl enable NetworkManager.service
+echo "  NetworkManager enabled"
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Cleaning
+-------------------------------------------------------------------------
+"
+# Remove no password sudo rights
+visudo -c >/dev/null && sed -i 's/^%wheel ALL=(ALL) NOPASSWD: ALL/# &/' /etc/sudoers
+visudo -c >/dev/null && sed -i 's/^%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# &/' /etc/sudoers
+# Add sudo rights
+visudo -c >/dev/null && sed -i 's/^# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
+visudo -c >/dev/null && sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
+EOF
