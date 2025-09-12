@@ -472,3 +472,39 @@ if ! grep -qs '/mnt' /proc/mounts; then
     echo "Rebooting in 1 Second ..." && sleep 1
     reboot now
 fi
+
+echo -ne "
+-------------------------------------------------------------------------
+                    RHEL Install on Main Drive
+-------------------------------------------------------------------------
+"
+
+# Detect EFI and install base system
+if [[ ! -d "/sys/firmware/efi" ]]; then
+    dnfstrap /mnt @core @development-tools kernel linux-firmware --assumeyes
+else
+    dnfstrap /mnt @core @development-tools kernel linux-firmware efibootmgr --assumeyes
+fi
+
+# Import official GPG key (optional, for repo trust)
+rpm --root /mnt --import /etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+
+# Copy repo configurations
+cp /etc/yum.repos.d/*.repo /mnt/etc/yum.repos.d/
+
+# Generate fstab
+genfstab -U /mnt >> /mnt/etc/fstab
+echo "
+  Generated /etc/fstab:
+"
+cat /mnt/etc/fstab
+echo -ne "
+-------------------------------------------------------------------------
+                    GRUB BIOS Bootloader Install & Check
+-------------------------------------------------------------------------
+"
+
+# Install GRUB2 for BIOS systems only
+if [[ ! -d "/sys/firmware/efi" ]]; then
+    grub2-install --boot-directory=/mnt/boot "${DISK}"
+fi
