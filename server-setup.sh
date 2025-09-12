@@ -411,6 +411,11 @@ wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/common
 wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/rhel-chroot.sh
   chmod +x rhel-chroot.sh
   mv rhel-chroot.sh /usr/local/bin/rhel-chroot
+wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/genfstab.sh
+  chmod +x genfstab.sh
+  mv genfstab.sh /usr/local/bin/genfstab
+wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/fstab-helpers
+  mv common /usr/local/bin/fstab-helpers
 echo -ne "
 -------------------------------------------------------------------------
                     Formatting Disk
