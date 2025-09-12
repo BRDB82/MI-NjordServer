@@ -406,9 +406,11 @@ dnf --releasever=$VERSION install -y gdisk
 wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/dnfstrap.sh
   chmod +x dnfstrap.sh
   mv dnfstrap.sh /usr/local/bin/dnfstrap
-wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/common.sh
-  chmod +x common.sh
-  mv common.sh /usr/local/bin/dnfcommon
+wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/common
+  mv common /usr/local/bin/dnfcommon
+wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/rhel-chroot.sh
+  chmod +x rhel-chroot.sh
+  mv rhel-chroot.sh /usr/local/bin/rhel-chroot
 echo -ne "
 -------------------------------------------------------------------------
                     Formatting Disk
