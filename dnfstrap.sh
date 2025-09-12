@@ -13,6 +13,7 @@ source "$(dirname "$0")/common"
 hostcache=0
 copyrepolist=1
 dnf_args=()
+dng_group_args=()
 dnfmode="install"
 copyconf=0
 dnf_config="/etc/dnf/dnf.conf"
@@ -53,9 +54,39 @@ dnfstrap() {
   $setup "$newroot" || die "failed to setup chroot %s" "$newroot"
 
   msg 'Installing packages to %s' "$newroot"
-  if ! $pid_unshare dnf --installroot="$newroot" "${dnf_args[@]}"; then
-    die 'Failed to install packages to new root'
+
+    #filter groups and regular packages
+    while [[ $# -gt 0 ]]; do
+    case $1 in
+      @*)
+        # Strip leading @ and store group name
+        dnf_group_args+=("${1#@}")
+        shift
+        ;;
+      *)
+        dnf_args+=("$1")
+        shift
+        ;;
+    esac
+  done
+  
+  # First install groups inside chroot
+  for group in "${dnf_group_args[@]}"; do
+    msg 'Installing group "%s" inside chroot' "$group"
+    if ! chroot "$newroot" dnf groupinstall "$group" \
+          --setopt=group_package_types=mandatory,default \
+          --assumeyes; then
+      die 'Failed to install group "%s"' "$group"
+    fi
+  done
+  
+  # Then install regular packages into installroot
+  if (( ${#dnf_args[@]} )); then
+    if ! $pid_unshare dnf --installroot="$newroot" "${dnf_args[@]}"; then
+      die 'Failed to install packages to new root'
+    fi
   fi
+
 
   if (( copyrepolist )); then
     # install the host's repo definitions onto the new root
