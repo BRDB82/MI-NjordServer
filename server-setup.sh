@@ -566,3 +566,137 @@ echo -ne "
 dnf install -y curl
 dnf install -y https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/t/terminus-fonts-console-4.48-1.el8.noarch.rpm --nogpgcheck
 dnf install -y rsync grub2
+wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/dnfstrap.sh
+  chmod +x dnfstrap.sh
+  mv dnfstrap.sh /usr/local/bin/dnfstrap
+wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/common
+  mv common /usr/local/bin/dnfcommon
+wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/rhel-chroot.sh
+  chmod +x rhel-chroot.sh
+  mv rhel-chroot.sh /usr/local/bin/rhel-chroot
+wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/genfstab.sh
+  chmod +x genfstab.sh
+  mv genfstab.sh /usr/local/bin/genfstab
+wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/fstab-helpers
+  mv common /usr/local/bin/fstab-helpers
+dnf install -y git ntp wget
+cp /etc/dnf/dnf.conf /etc/dnf/dnf.conf.bak
+
+nc=$(grep -c ^"cpu cores" /proc/cpuinfo)
+echo -ne "
+-------------------------------------------------------------------------
+                    You have " $nc" cores. And
+            changing the makeflags for " $nc" cores. Aswell as
+                changing the compression settings.
+-------------------------------------------------------------------------
+"
+TOTAL_MEM=$(cat /proc/meminfo | grep -i 'memtotal' | grep -o '[[:digit:]]*')
+if [[  $TOTAL_MEM -gt 8000000 ]]; then
+sed -i "s/#MAKEFLAGS=\"-j2\"/MAKEFLAGS=\"-j$nc\"/g" /etc/makepkg.conf
+sed -i "s/COMPRESSXZ=(xz -c -z -)/COMPRESSXZ=(xz -c -T $nc -z -)/g" /etc/makepkg.conf
+fi
+echo -ne "
+-------------------------------------------------------------------------
+                    Setup Language to US and set locale
+-------------------------------------------------------------------------
+"
+locale -a | grep -q en_US.UTF-8 || localedef -i en_US -f UTF-8 en_US.UTF-8
+timedatectl --no-ask-password set-timezone "${TIMEZONE}"
+timedatectl --no-ask-password set-ntp 1
+localectl --no-ask-password set-locale LANG="en_US.UTF-8" LC_TIME="en_US.UTF-8"
+ln -sf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
+
+# Set keymap
+localectl --no-ask-password set-keymap "${KEYMAP}"
+echo "KEYMAP=${KEYMAP}" > /etc/vconsole.conf
+echo "XKBLAYOUT=${KEYMAP}" >> /etc/vconsole.conf
+echo "Keymap set to: ${KEYMAP}"
+
+# Add sudo no-password rights
+sed -i 's/^# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
+sed -i 's/^# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
+
+# Optimize DNF behavior
+echo "max_parallel_downloads=5" >> /etc/dnf/dnf.conf
+echo "color=always" >> /etc/dnf/dnf.conf
+
+# Refresh metadata
+dnf makecache
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Installing Microcode
+-------------------------------------------------------------------------
+"
+
+# Determine processor type and install microcode
+if grep -q "GenuineIntel" /proc/cpuinfo; then
+    echo "Installing Intel microcode"
+    dnf install -y microcode_ctl
+elif grep -q "AuthenticAMD" /proc/cpuinfo; then
+    echo "Installing AMD microcode"
+    dnf install -y linux-firmware
+else
+    echo "Unable to determine CPU vendor. Skipping microcode installation."
+fi
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Installing Graphics Drivers
+-------------------------------------------------------------------------
+"
+
+# Graphics Drivers find and install
+if echo "${gpu_type}" | grep -E "NVIDIA|GeForce"; then
+    echo "Installing NVIDIA drivers via dnf module"
+    dnf clean all
+    dnf module install -y nvidia-driver:latest-dkms
+    dnf install -y nvidia-gds cuda
+elif echo "${gpu_type}" | grep 'VGA' | grep -E "Radeon|AMD"; then
+    echo "Installing AMD drivers (bundled in linux-firmware)"
+    dnf install -y linux-firmware mesa-dri-drivers mesa-vulkan-drivers
+elif echo "${gpu_type}" | grep -E "Integrated Graphics Controller|Intel Corporation UHD"; then
+    echo "Installing Intel drivers"
+    dnf config-manager --add-repo https://repositories.intel.com/graphics/rhel/8.6/flex/intel-graphics.repo
+    dnf clean all
+    dnf makecache
+    dnf install -y intel-opencl intel-media intel-mediasdk libvpl2 level-zero intel-level-zero-gpu \
+                   mesa-dri-drivers mesa-vulkan-drivers mesa-vdpau-drivers libva libva-utils
+else
+    echo "Unknown GPU type. Skipping graphics driver installation."
+fi
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Adding User
+-------------------------------------------------------------------------
+"
+getent group libvirt >/dev/null || groupadd libvirt
+useradd -m -G wheel,libvirt -s /bin/bash "$USERNAME"
+echo "$USERNAME created, home directory created, added to wheel and libvirt group, default shell set to /bin/bash"
+echo "$USERNAME:$PASSWORD" | chpasswd
+echo "$USERNAME password set"
+echo "$NAME_OF_MACHINE" > /etc/hostname
+hostnamectl set-hostname "$NAME_OF_MACHINE"
+
+echo -ne "
+████╗  ███╗██╗              ███╗   ██╗     ██╗ ██████╗ ██████╗ ██████╗ 
+████╗ ████║██║              ████╗  ██║     ██║██╔═══██╗██╔══██╗██╔══██╗
+██╔████╔██║██║    █████╗    ██╔██╗ ██║     ██║██║   ██║██████╔╝██║  ██║
+██║╚██╔╝██║██║    ╚════╝    ██║╚██╗██║██   ██║██║   ██║██╔══██╗██║  ██║
+██║ ╚═╝ ██║██║              ██║ ╚████║╚█████╔╝╚██████╔╝██║  ██║██████╔╝
+╚═╝     ╚═╝╚═╝              ╚═╝  ╚═══╝ ╚════╝  ╚═════╝ ╚═╝  ╚═╝╚═════╝ 
+                                                                       
+           ███████╗███████╗██████╗ ██╗   ██╗███████╗██████╗                       
+           ██╔════╝██╔════╝██╔══██╗██║   ██║██╔════╝██╔══██╗                      
+           ███████╗█████╗  ██████╔╝██║   ██║█████╗  ██████╔╝                     
+           ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗                      
+           ███████║███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║                      
+           ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝
+-----------------------------------------------------------------------
+                  Automated Rocky Linux Installer
+-----------------------------------------------------------------------
+
+Final Setup and Configurations
+GRUB EFI Bootloader Install & Check
+"
