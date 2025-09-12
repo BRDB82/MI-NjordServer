@@ -544,3 +544,20 @@ fi
 gpu_type=$(lspci | grep -E "VGA|3D|Display")
 
 rhel-chroot /mnt /bin/bash -c "KEYMAP='${KEYMAP}' /bin/bash" <<EOF
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Network Setup
+-------------------------------------------------------------------------
+"
+dnf install -y NetworkManager
+systemctl enable NetworkManager
+systemctl start NetworkManager
+echo -ne "
+-------------------------------------------------------------------------
+                    Setting up repos for optimal download
+-------------------------------------------------------------------------
+"
+dnf install -y curl
+dnf install -y https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/t/terminus-fonts-console-4.48-1.el8.noarch.rpm --nogpgcheck
+dnf install -y rsync grub2
