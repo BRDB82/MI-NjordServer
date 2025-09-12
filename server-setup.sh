@@ -508,3 +508,39 @@ echo -ne "
 if [[ ! -d "/sys/firmware/efi" ]]; then
     grub2-install --boot-directory=/mnt/boot "${DISK}"
 fi
+echo -ne "
+-------------------------------------------------------------------------
+                    Checking for low memory systems <8G
+-------------------------------------------------------------------------
+"
+
+TOTAL_MEM=$(awk '/MemTotal/ { print $2 }' /proc/meminfo) # in KiB
+
+if [[ $TOTAL_MEM -lt 8000000 ]]; then
+    echo "Low memory detected: enabling zram swap"
+
+    # Load zram module
+    modprobe zram
+
+    # Configure zram0 with 2G compressed swap
+    echo lz4 > /sys/block/zram0/comp_algorithm
+    echo $((2 * 1024 * 1024 * 1024)) > /sys/block/zram0/disksize
+
+    # Format and enable swap
+    mkswap /dev/zram0
+    swapon /dev/zram0
+
+    # Persist zram swap in target system
+    mkdir -p /mnt/etc/systemd/zram-generator.conf.d
+    cat > /mnt/etc/systemd/zram-generator.conf.d/00-zram.conf <<EOF
+[zram0]
+zram-size = 2048MiB
+compression-algorithm = lz4
+EOF
+
+    echo "ZRAM swap configured and will persist after install"
+fi
+
+gpu_type=$(lspci | grep -E "VGA|3D|Display")
+
+rhel-chroot /mnt /bin/bash -c "KEYMAP='${KEYMAP}' /bin/bash" <<EOF
