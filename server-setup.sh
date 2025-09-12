@@ -403,6 +403,12 @@ echo -ne "
 "
 dnf --releasever=$VERSION config-manager --set-enabled epel
 dnf --releasever=$VERSION install -y gdisk
+wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/dnfstrap.sh
+  chmod +x dnfstrap.sh
+  mv dnfstrap.sh /usr/local/bin/dnfstrap
+wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/common.sh
+  chmod +x common.sh
+  mv common.sh /usr/local/bin/dnfcommon
 echo -ne "
 -------------------------------------------------------------------------
                     Formatting Disk
