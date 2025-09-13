@@ -1,7 +1,7 @@
 #!/bin/bash
 
 shopt -s extglob
-source "/usr/bin/common"
+source "/usr/bin/dnfcommon"
 
 keepresolvconf=0
 
