@@ -413,7 +413,7 @@ wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/rhel-chroot.sh
   mv rhel-chroot.sh /usr/bin/rhel-chroot
 wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/genfstab.sh
   chmod +x genfstab.sh
-  mv genfstab.sh /usr/local/bin/genfstab
+  mv genfstab.sh /usr/bin/genfstab
 wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/fstab-helpers
   mv fstab-helpers /usr/bin/fstab-helpers
 echo -ne "
