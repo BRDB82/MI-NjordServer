@@ -61,6 +61,7 @@ chroot_add_resolv_conf() {
   chroot_add_mount "$src" "$dest" -c --bind
 }
 
+OPTIND=1
 while getopts ':hu:r' flag; do
   case $flag in
     h)
