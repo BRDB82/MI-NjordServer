@@ -73,8 +73,8 @@ dnfstrap() {
   # First install groups inside chroot
   for group in "${dnf_group_args[@]}"; do
     msg 'Installing group "%s" inside installroot' "$group"
-    if ! dnf group "$group" \
-          --installroo"$newroot" \
+    if ! dnf group install "$group" \
+          --installroo"t=$newroot" \
           --setopt=group_package_types=mandatory,default \
           --assumeyes; then
       die 'Failed to install group "%s"' "$group"
