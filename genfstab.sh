@@ -2,7 +2,7 @@
 
 shopt -s extglob
 
-source "$(dirname "$0")/fstab-helpers"
+source "/usr/bin/fstab-helpers"
 
 write_source() {
   local src=$1 spec= label= uuid= comment=()
