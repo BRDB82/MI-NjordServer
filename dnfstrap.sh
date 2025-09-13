@@ -8,7 +8,7 @@
 #  4) A valid repo appears in /etc/yum.repos.d
 
 shopt -s extglob
-source "/usr/bin/common"
+source "/usr/bin/dnfcommon"
 
 hostcache=0
 copyrepolist=1
