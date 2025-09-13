@@ -405,17 +405,17 @@ dnf --releasever=$VERSION config-manager --set-enabled epel
 dnf --releasever=$VERSION install -y gdisk
 wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/dnfstrap.sh
   chmod +x dnfstrap.sh
-  mv dnfstrap.sh /usr/local/bin/dnfstrap
+  mv dnfstrap.sh /usr/bin/dnfstrap
 wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/common
-  mv common /usr/local/bin/dnfcommon
+  mv common /usr/bin/dnfcommon
 wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/rhel-chroot.sh
   chmod +x rhel-chroot.sh
-  mv rhel-chroot.sh /usr/local/bin/rhel-chroot
+  mv rhel-chroot.sh /usr/bin/rhel-chroot
 wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/genfstab.sh
   chmod +x genfstab.sh
   mv genfstab.sh /usr/local/bin/genfstab
 wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/fstab-helpers
-  mv common /usr/local/bin/fstab-helpers
+  mv fstab-helpers /usr/bin/fstab-helpers
 echo -ne "
 -------------------------------------------------------------------------
                     Formatting Disk
