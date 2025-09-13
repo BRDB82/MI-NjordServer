@@ -89,4 +89,4 @@ shift
 
 args=("$@")
 setup=chroot_setup
-arch-chroot
+rhel-chroot
