@@ -55,19 +55,20 @@ dnfstrap() {
 
   msg 'Installing packages to %s' "$newroot"
 
-    #filter groups and regular packages
-    while [[ $# -gt 0 ]]; do
+  # If no arguments are passed after root, default to @core
+  (( $# == 0 )) && set -- @core
+  
+  # Filter group targets and regular packages
+  while [[ $# -gt 0 ]]; do
     case $1 in
       @*)
-        # Strip leading @ and store group name
-        dnf_group_args+=("${1#@}")
-        shift
+        dnf_group_args+=("$1")  # preserve @ prefix
         ;;
       *)
         dnf_args+=("$1")
-        shift
         ;;
     esac
+    shift
   done
   
   # First install groups inside chroot
