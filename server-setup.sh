@@ -330,7 +330,7 @@ logo
 keymap
 
 echo "Setting up mirrors for optimal download"
-is=$(curl -4 -s ifconfig.io/coutnry_code)
+is=$(curl -4 -s ifconfig.io/country_code)
 timedatectl set-ntp true
 #determine RHEL derivative, currently only Rocky is supported
 if ! grep -qi '^ID=rocky' /etc/os-release 2>/dev/null; then
@@ -343,11 +343,11 @@ if ! grep -qi '^ID=rocky' /etc/os-release 2>/dev/null; then
     sed 's/\/$//' | \
     sort -V | tail -1)
 
-  mkdir -p /etc/yum.repos.d
+  [ -d /etc/yum.repos.d ] || mkdir /etc/yum.repos.d
 
   if [ ! -f /etc/yum.repos.d/Rocky-BaseOS.repo ]; then
     {
-      echo "[baseos]"
+      echo "[rocky-baseos]"
       echo "name=Rocky Linux $VERSION - BaseOS"
       echo "baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/BaseOS/x86_64/os/"
       echo "enabled=1"
@@ -357,7 +357,7 @@ if ! grep -qi '^ID=rocky' /etc/os-release 2>/dev/null; then
 
   if [ ! -f /etc/yum.repos.d/Rocky-AppStream.repo ]; then
     {
-      echo "[appstream]"
+      echo "[rocky-appstream]"
       echo "name=Rocky Linux $VERSION - AppStream"
       echo "baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/AppStream/x86_64/os/"
       echo "enabled=1"
@@ -386,7 +386,7 @@ fi
 
 dnf --releasever=$VERSION update
 dnf --releasever=$VERSION clean all
-dnf --releasever=$VERSION install -y makecache
+dnf --releasever=$VERSION makecache
 dnf --releasever=$VERSION install -y rpm
 dnf --releasever=$VERSION install -y epel-release --nogpgcheck
 dnf --releasever=$VERSION install -y dnf-plugins-core rsync grub2 grub2-tools kbd 
