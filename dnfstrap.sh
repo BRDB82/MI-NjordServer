@@ -73,7 +73,6 @@ dnfstrap() {
   if (( copyconf )); then
     cp -a "$dnf_config" "$newroot/etc/dnf/dnf.conf"
   fi
-}
 
   # First install groups inside chroot
   for group in "${dnf_group_args[@]}"; do
@@ -92,6 +91,7 @@ dnfstrap() {
       die 'Failed to install packages to new root'
     fi
   fi
+}
 
 if [[ -z $1 || $1 = @(-h|--help) ]]; then
   usage
