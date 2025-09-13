@@ -403,18 +403,18 @@ echo -ne "
 "
 dnf --releasever=$VERSION config-manager --set-enabled epel
 dnf --releasever=$VERSION install -y gdisk
-wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/dnfstrap.sh
+wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/dnfstrap.sh
   chmod +x dnfstrap.sh
   mv dnfstrap.sh /usr/local/bin/dnfstrap
-wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/common
+wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/common
   mv common /usr/local/bin/dnfcommon
-wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/rhel-chroot.sh
+wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/rhel-chroot.sh
   chmod +x rhel-chroot.sh
   mv rhel-chroot.sh /usr/local/bin/rhel-chroot
-wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/genfstab.sh
+wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/genfstab.sh
   chmod +x genfstab.sh
   mv genfstab.sh /usr/local/bin/genfstab
-wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/fstab-helpers
+wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/fstab-helpers
   mv common /usr/local/bin/fstab-helpers
 echo -ne "
 -------------------------------------------------------------------------
@@ -566,18 +566,18 @@ echo -ne "
 dnf install -y curl
 dnf install -y https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/t/terminus-fonts-console-4.48-1.el8.noarch.rpm --nogpgcheck
 dnf install -y rsync grub2
-wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/dnfstrap.sh
+wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/dnfstrap.sh
   chmod +x dnfstrap.sh
   mv dnfstrap.sh /usr/local/bin/dnfstrap
-wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/common
+wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/common
   mv common /usr/local/bin/dnfcommon
-wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/rhel-chroot.sh
+wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/rhel-chroot.sh
   chmod +x rhel-chroot.sh
   mv rhel-chroot.sh /usr/local/bin/rhel-chroot
-wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/genfstab.sh
+wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/genfstab.sh
   chmod +x genfstab.sh
   mv genfstab.sh /usr/local/bin/genfstab
-wget https://raw.githsubusercontent.com/BRDB82/MI-NjordServer/main/fstab-helpers
+wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/fstab-helpers
   mv common /usr/local/bin/fstab-helpers
 dnf install -y git ntp wget
 cp /etc/dnf/dnf.conf /etc/dnf/dnf.conf.bak
