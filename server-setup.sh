@@ -519,6 +519,7 @@ if [[ -d "/sys/firmware/efi" ]]; then
       --bootloader-id=rocky \
       --boot-directory=/mnt/boot \
       --recheck
+      --force
 else
     grub2-install --boot-directory=/mnt/boot "${DISK}"
 fi
