@@ -463,7 +463,7 @@ elif [[ "${FS}" == "ext4" ]]; then
 fi
 
 BOOT_UUID=$(blkid -s UUID -o value "${partition1}")
-EFI_UID=$(blkid -s UUID -o value "${partition2}")
+EFI_UUID=$(blkid -s UUID -o value "${partition2}")
 
 sync
 if ! mountpoint -q /mnt; then
