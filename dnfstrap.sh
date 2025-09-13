@@ -82,7 +82,7 @@ dnfstrap() {
   
   # Then install regular packages into installroot
   if (( ${#dnf_args[@]} )); then
-    if ! $pid_unshare dnf --installroot="$newroot" "${dnf_args[@]}"; then
+    if ! dnf --installroot="$newroot" "${dnf_args[@]}"; then
       die 'Failed to install packages to new root'
     fi
   fi
