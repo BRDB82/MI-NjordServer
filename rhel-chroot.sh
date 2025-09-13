@@ -1,7 +1,7 @@
 #!/bin/bash
 
 shopt -s extglob
-source "$(dirname "$0")/common"
+source "/usr/bin/common"
 
 keepresolvconf=0
 
