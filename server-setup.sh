@@ -485,7 +485,6 @@ echo -ne "
 "
 
 # Detect EFI and install base system
-y
 echo "$VERSION" > "/mnt/etc/dnf/vars/releasever"
 if [[ ! -d "/sys/firmware/efi" ]]; then
     dnfstrap /mnt @core @development-tools kernel linux-firmware --assumeyes
