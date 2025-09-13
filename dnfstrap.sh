@@ -71,6 +71,16 @@ dnfstrap() {
     shift
   done
   
+  if (( copyrepolist )); then
+    # install the host's repo definitions onto the new root
+    cp -a /etc/yum.repos.d "$newroot/etc/"
+  fi
+
+  if (( copyconf )); then
+    cp -a "$dnf_config" "$newroot/etc/dnf/dnf.conf"
+  fi
+}
+
   # First install groups inside chroot
   for group in "${dnf_group_args[@]}"; do
     msg 'Installing group "%s" inside installroot' "$group"
@@ -88,17 +98,6 @@ dnfstrap() {
       die 'Failed to install packages to new root'
     fi
   fi
-
-
-  if (( copyrepolist )); then
-    # install the host's repo definitions onto the new root
-    cp -a /etc/yum.repos.d "$newroot/etc/"
-  fi
-
-  if (( copyconf )); then
-    cp -a "$dnf_config" "$newroot/etc/dnf/dnf.conf"
-  fi
-}
 
 if [[ -z $1 || $1 = @(-h|--help) ]]; then
   usage
