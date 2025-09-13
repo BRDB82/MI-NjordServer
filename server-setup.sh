@@ -513,10 +513,13 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 
-# Install GRUB2 for BIOS systems only
-if [[ ! -d "/sys/firmware/efi" ]]; then
-    grub2-install --boot-directory=/mnt/boot "${DISK}"
-fi
+grub2-install \
+  --target=x86_64-efi \
+  --efi-directory=/mnt/boot/efi \
+  --bootloader-id=rocky \
+  --boot-directory=/mnt/boot \
+  --recheck
+
 echo -ne "
 -------------------------------------------------------------------------
                     Checking for low memory systems <8G
