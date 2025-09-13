@@ -389,7 +389,7 @@ dnf --releasever=$VERSION clean all
 dnf --releasever=$VERSION makecache
 dnf --releasever=$VERSION install -y rpm
 dnf --releasever=$VERSION install -y epel-release --nogpgcheck
-dnf --releasever=$VERSION install -y dnf-plugins-core rsync grub2 grub2-tools grub2-efi kbd 
+dnf --releasever=$VERSION install -y dnf-plugins-core rsync grub2 grub2-tools grub2-efi-x64 grub2-efi-x64-modules kbd 
 dnf install -y https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/t/terminus-fonts-console-4.48-1.el8.noarch.rpm --nogpgcheck
 setfont ter-118b
 
@@ -488,9 +488,9 @@ echo -ne "
 mkdir -p /mnt/etc/dnf/vars
 echo "$VERSION" > "/mnt/etc/dnf/vars/releasever"
 if [[ ! -d "/sys/firmware/efi" ]]; then
-    dnfstrap /mnt @core @development-tools kernel linux-firmware grub2 grub2-efi efibootmgr --assumeyes
+    dnfstrap /mnt @core @development-tools kernel linux-firmware grub2 efibootmgr grub2-efi-x64 grub2-efi-x64-modules --assumeyes
 else
-    dnfstrap /mnt @core @development-tools kernel linux-firmware grub2 efibootmgr --assumeyes
+    dnfstrap /mnt @core @development-tools kernel linux-firmware grub2 efibootmgr grub2-efi-x64 grub2-efi-x64-modules --assumeyes
 fi
 
 # Import official GPG key (optional, for repo trust)
