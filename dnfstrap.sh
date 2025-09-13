@@ -53,22 +53,16 @@ dnfstrap() {
   # mount API filesystems
   $setup "$newroot" || die "failed to setup chroot %s" "$newroot"
 
-  msg 'Installing packages %s to %s' "$1" "$newroot"
 
   # If no arguments are passed after root, default to @core
   (( $# == 0 )) && set -- @core
   
   # Filter group targets and regular packages
-  while [[ $# -gt 0 ]]; do
-    case $1 in
-      @*)
-        dnf_group_args+=("$1")  # preserve @ prefix
-        ;;
-      *)
-        dnf_args+=("$1")
-        ;;
+  for arg in "$@"; do
+    case $arg in
+      @*) dnf_group_args+=("$arg");;
+      *) dnf_args+=("$arg");;
     esac
-    shift
   done
   
   if (( copyrepolist )); then
