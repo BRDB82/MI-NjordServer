@@ -53,7 +53,7 @@ dnfstrap() {
   # mount API filesystems
   $setup "$newroot" || die "failed to setup chroot %s" "$newroot"
 
-  msg 'Installing packages to %s' "$newroot"
+  msg 'Installing packages %s to %s' "$1" "$newroot"
 
   # If no arguments are passed after root, default to @core
   (( $# == 0 )) && set -- @core
