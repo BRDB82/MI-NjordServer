@@ -104,6 +104,7 @@ if [[ -z $1 || $1 = @(-h|--help) ]]; then
   exit $(( $# ? 0 : 1 ))
 fi
 
+OPTIND=1
 while getopts ':C:cDiMPh' flag; do
   case $flag in
     C)
