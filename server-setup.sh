@@ -494,8 +494,9 @@ else
 fi
 
 # Import official GPG key (optional, for repo trust)
-install -Dm644 /etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial /mnt/etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
-rpm --root /mnt --import /etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
+find /etc/pki/rpm-gpg/ -type f -name 'RPM-GPG-KEY-*' -exec install -Dm644 {} /mnt{} \;
+find /mnt/etc/pki/rpm-gpg/ -type f -name 'RPM-GPG-KEY-*' -exec rpm --root /mnt --import {} \;
+
 
 # Copy repo configurations
 cp /etc/yum.repos.d/*.repo /mnt/etc/yum.repos.d/
