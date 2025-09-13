@@ -494,6 +494,7 @@ else
 fi
 
 # Import official GPG key (optional, for repo trust)
+install -Dm644 /etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial /mnt/etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
 rpm --root /mnt --import /etc/pki/rpm-gpg/RPM-GPG-KEY-rockyofficial
 
 # Copy repo configurations
