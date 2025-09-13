@@ -488,9 +488,9 @@ echo -ne "
 mkdir -p /mnt/etc/dnf/vars
 echo "$VERSION" > "/mnt/etc/dnf/vars/releasever"
 if [[ ! -d "/sys/firmware/efi" ]]; then
-    dnfstrap /mnt @core @development-tools kernel linux-firmware --assumeyes
+    dnfstrap /mnt @core @development-tools kernel linux-firmware grub2 grub2-efi efibootmgr --assumeyes
 else
-    dnfstrap /mnt @core @development-tools kernel linux-firmware efibootmgr --assumeyes
+    dnfstrap /mnt @core @development-tools kernel linux-firmware grub2 efibootmgr --assumeyes
 fi
 
 # Import official GPG key (optional, for repo trust)
