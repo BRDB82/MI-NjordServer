@@ -74,7 +74,7 @@ dnfstrap() {
   for group in "${dnf_group_args[@]}"; do
     msg 'Installing group "%s" inside installroot' "$group"
     if ! dnf group install "$group" \
-          --installroo"t=$newroot" \
+          --installroot="$newroot" \
           --setopt=group_package_types=mandatory,default \
           --assumeyes; then
       die 'Failed to install group "%s"' "$group"
