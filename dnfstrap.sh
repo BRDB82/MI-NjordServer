@@ -128,7 +128,7 @@ while getopts ':C:cDiMPh' flag; do
       exit 0
       ;;
     :)
-      die '%s: option requires an argument -- '\''%s'\'' "${0##*/}" "$OPTARG"
+      die '%s: option requires an argument -- '\''%s'\''' "${0##*/}" "$OPTARG"
       ;;
     ?)
       die "%s: invalid option -- '\''%s'\'" "${0##*/}" "$OPTARG"
