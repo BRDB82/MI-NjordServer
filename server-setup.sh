@@ -471,8 +471,9 @@ if ! mountpoint -q /mnt; then
     exit 1
 fi
 
-mkdir -p /mnt/boot/efi
+mkdir -p /mnt/boot
 mount -U "${BOOT_UUID}" /mnt/boot/
+mkdir -p /mnt/boot/efi
 mount -U "${EFI_UUID}" /mnt/boot/efi
 
 if ! grep -qs '/mnt' /proc/mounts; then
