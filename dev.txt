@@ -26,3 +26,9 @@ dnstrap:
 https://github.com/archlinux/arch-install-scripts/blob/master/pacstrap.in
 
 dnfstrap/rhel-chroot/common are build
+
+---
+Rebuild repo:
+dnf --setopt=reposdir=/tmp/rocky-repos install -y dnf-plugins-core rsync grub2 grub2-tools grub2-efi-x64 grub2-efi-x64-modules kbd
+dnf --setopt=reposdir=/tmp/rocky-repos install -y https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/e/epel-release-8-19.el8.noarch.rpm --nogpgcheck
+rm -rf /tmp/rocky-repos
