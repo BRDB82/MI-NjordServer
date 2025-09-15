@@ -380,6 +380,8 @@ CPE_NAME="cpe:/o:rocky:rocky:$VERSION"
 HOME_URL="https://rockylinux.org/"
 BUG_REPORT_URL="https://bugs.rockylinux.org/"
 EOF
+
+echo "releasever=$VERSION" >> /etc/dnf/dnf.conf
 else
   # If Rocky is present, extract VERSION from os-release
   VERSION=$(awk -F= '/^VERSION_ID=/{gsub(/"/,"",$2);print $2}' /etc/os-release)
