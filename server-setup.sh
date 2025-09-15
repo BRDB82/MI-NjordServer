@@ -405,8 +405,8 @@ echo -ne "
                     Installing Prerequisites
 -------------------------------------------------------------------------
 "
-dnf --releasever=$VERSION config-manager --set-enabled epel
-dnf --releasever=$VERSION install -y gdisk
+dnf --setopt=reposdir=/tmp/rocky-repos.d config-manager --set-enabled repl
+dnf --setopt=reposdir=/tmp/rocky-repos.d install -y gdisk
 wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/dnfstrap.sh
   chmod +x dnfstrap.sh
   mv dnfstrap.sh /usr/bin/dnfstrap
@@ -509,8 +509,8 @@ find /mnt/etc/pki/rpm-gpg/ -type f -name 'RPM-GPG-KEY-*' -exec rpm --root /mnt -
 
 
 # Copy repo configurations
-cp /tmp/rocky-repos.d/*.repo /mnt/etc/yum.repos.d/
-sed -i 's/^enabled=1/enabled=0/' /mnt/etc/yum.repos.d/rocky.repo
+#cp /tmp/rocky-repos.d/*.repo /mnt/etc/yum.repos.d/
+#sed -i 's/^enabled=1/enabled=0/' /mnt/etc/yum.repos.d/rocky.repo
 
 # Generate fstab
 genfstab -U /mnt >> /mnt/etc/fstab
