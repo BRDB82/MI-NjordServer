@@ -14,6 +14,7 @@ hostcache=0
 copyrepolist=1
 dnf_args=()
 dng_group_args=()
+setopt_arg=()
 dnfmode="install"
 copyconf=0
 dnf_config="/etc/dnf/dnf.conf"
@@ -74,23 +75,28 @@ dnfstrap() {
     cp -a "$dnf_config" "$newroot/etc/dnf/dnf.conf"
   fi
 
-  # First install groups inside chroot
-  for group in "${dnf_group_args[@]}"; do
-    msg 'Installing group "%s" inside installroot' "$group"
-    if ! dnf group install "$group" \
-          --installroot="$newroot" \
-          --setopt=group_package_types=mandatory,default \
-          --assumeyes; then
-      die 'Failed to install group "%s"' "$group"
-    fi
-  done
-  
-  # Then install regular packages into installroot
-  if (( ${#dnf_args[@]} )); then
-    if ! dnf --installroot="$newroot" "${dnf_args[@]}"; then
-      die 'Failed to install packages to new root'
-    fi
+  if [ -d /tmp/rocky-repos.d ]; then
+  setopt_arg=(--setopt=reposdir=/tmp/rocky-repos.d)
+fi
+
+# First install groups inside chroot
+for group in "${dnf_group_args[@]}"; do
+  msg 'Installing group "%s" inside installroot' "$group"
+  if ! dnf group install "$group" \
+        --installroot="$newroot" \
+        "${setopt_arg[@]}" \
+        --setopt=group_package_types=mandatory,default \
+        --assumeyes; then
+    die 'Failed to install group "%s"' "$group"
   fi
+done
+
+# Then install regular packages into installroot
+if (( ${#dnf_args[@]} )); then
+  if ! dnf --installroot="$newroot" "${setopt_arg[@]}" "${dnf_args[@]}"; then
+    die 'Failed to install packages to new root'
+  fi
+fi
 }
 
 if [[ -z $1 || $1 = @(-h|--help) ]]; then
