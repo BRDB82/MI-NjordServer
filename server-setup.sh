@@ -344,25 +344,26 @@ if ! grep -qi '^ID=rocky' /etc/os-release 2>/dev/null; then
     sort -V | tail -1)
 
   [ -d /etc/yum.repos.d ] || mkdir /etc/yum.repos.d
+  [ -d /tmp/rocky-repos.d ] || mkdir /tmp/rocky-repos.d
 
-  if [ ! -f /etc/yum.repos.d/Rocky-BaseOS.repo ]; then
+  if [ ! -f /tmp/rocky-repos.d/BaseOS.repo ]; then
     {
       echo "[rocky-baseos]"
       echo "name=Rocky Linux $VERSION - BaseOS"
       echo "baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/BaseOS/x86_64/os/"
       echo "enabled=1"
       echo "gpgcheck=0"
-    } > /etc/yum.repos.d/Rocky-BaseOS.repo
+    } > /tmp/rocky-repos.d/BaseOS.repo
   fi
 
-  if [ ! -f /etc/yum.repos.d/Rocky-AppStream.repo ]; then
+  if [ ! -f /tmp/rocky-repos.d/AppStream.repo ]; then
     {
       echo "[rocky-appstream]"
       echo "name=Rocky Linux $VERSION - AppStream"
       echo "baseurl=https://dl.rockylinux.org/pub/rocky/$VERSION/AppStream/x86_64/os/"
       echo "enabled=1"
       echo "gpgcheck=0"
-    } > /etc/yum.repos.d/Rocky-AppStream.repo
+    } > /tmp/rocky-repos.d/AppStream.repo
   fi
 
   # Create /etc/os-release for Rocky
@@ -384,12 +385,13 @@ else
   VERSION=$(awk -F= '/^VERSION_ID=/{gsub(/"/,"",$2);print $2}' /etc/os-release)
 fi
 
-dnf --releasever=$VERSION update
-dnf --releasever=$VERSION clean all
-dnf --releasever=$VERSION makecache
-dnf --releasever=$VERSION install -y rpm
-dnf --releasever=$VERSION install -y epel-release --nogpgcheck
-dnf --releasever=$VERSION install -y dnf-plugins-core rsync grub2 grub2-tools grub2-efi-x64 grub2-efi-x64-modules kbd 
+dnf --setopt=reposdir=/tmp/rocky-repos.d update -y
+dnf --setopt=reposdir=/tmp/rocky-repos.d clean all
+dnf --setopt=reposdir=/tmp/rocky-repos.d makecache
+dnf --setopt=reposdir=/tmp/rocky-repos.d install -y rpm
+dnf --setopt=reposdir=/tmp/rocky-repos.d install -y epel-release --nogpgcheck
+mv /etc/yum.repos.d/epel*.repo /tmp/rocky-repos.d/
+dnf --setopt=reposdir=/tmp/rocky-repos.d install -y grub2 grub2-tools grub2-efi-x64 grub2-efi-x64-modules kbd
 dnf install -y https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/t/terminus-fonts-console-4.48-1.el8.noarch.rpm --nogpgcheck
 setfont ter-118b
 
