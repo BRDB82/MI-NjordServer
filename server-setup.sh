@@ -507,7 +507,7 @@ find /mnt/etc/pki/rpm-gpg/ -type f -name 'RPM-GPG-KEY-*' -exec rpm --root /mnt -
 
 
 # Copy repo configurations
-cp /etc/yum.repos.d/*.repo /mnt/etc/yum.repos.d/
+cp /tmp/rocky-repos.d/*.repo /mnt/etc/yum.repos.d/
 sed -i 's/^enabled=1/enabled=0/' /mnt/etc/yum.repos.d/rocky.repo
 
 # Generate fstab
