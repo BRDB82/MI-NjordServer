@@ -66,10 +66,10 @@ dnfstrap() {
     esac
   done
   
-  if (( copyrepolist )); then
+  #if (( copyrepolist )); then
     # install the host's repo definitions onto the new root
     #cp -a /etc/yum.repos.d "$newroot/etc/" #THIS GIVES ISSUES, DISABLED
-  fi
+  #fi
 
   if (( copyconf )); then
     cp -a "$dnf_config" "$newroot/etc/dnf/dnf.conf"
