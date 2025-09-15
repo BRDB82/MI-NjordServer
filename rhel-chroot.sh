@@ -3,6 +3,8 @@
 shopt -s extglob
 source "/usr/bin/dnfcommon"
 
+echo "PRE-GETOPTS \$@: [$@]"
+
 keepresolvconf=0
 
 usage() {
@@ -84,7 +86,7 @@ while getopts ':hu:r' flag; do
 done
 shift $(( OPTIND - 1 ))
 
-(( $# )) || die 'No chroot directory specified'
+(( $# )) || die 'No chroot directory specified (chrootdir=$1)'
 chrootdir=$1
 shift
 
