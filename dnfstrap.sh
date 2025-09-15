@@ -68,7 +68,7 @@ dnfstrap() {
   
   if (( copyrepolist )); then
     # install the host's repo definitions onto the new root
-    cp -a /etc/yum.repos.d "$newroot/etc/"
+    #cp -a /etc/yum.repos.d "$newroot/etc/" #THIS GIVES ISSUES, DISABLED
   fi
 
   if (( copyconf )); then
