@@ -80,6 +80,9 @@ dnfstrap() {
   setopt_arg=(--setopt=reposdir=/tmp/rocky-repos.d)
 fi
 
+dnf --installroot="$newroot" clean all
+dnf --installroot="$newroot" makecache
+
 # First install groups inside chroot
 for group in "${dnf_group_args[@]}"; do
   msg 'Installing group "%s" inside installroot' "$group"
