@@ -412,7 +412,7 @@ sed -i '/^
 
 /,/^
 
-\[/ s/^enabled=.*/enabled=1/' /tmp/rocky-repos.d/repl.repo
+\[/ s/^enabled=.*/enabled=1/' /tmp/rocky-repos.d/epel.repo
 
 dnf --setopt=reposdir=/tmp/rocky-repos.d install -y gdisk
 wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/dnfstrap.sh
