@@ -72,6 +72,7 @@ dnfstrap() {
     cp -a /etc/yum.repos.d/*.repo "$newroot/etc/yum.repos.d"
     sed -i 's|BaseOS-$releasever$rltype|$rltype-BaseOS-$releasever|g' "$newroot/etc/yum.repos.d/"*.repo
     sed -i 's|AppStream-$releasever$rltype|$rltype-AppStream-$releasever|g' "$newroot/etc/yum.repos.d/"*.repo
+    sed -i 's|extras-$releasever$rltype|$rltype-extras-$releasever|g' "$newroot/etc/yum.repos.d/"*.repo
   fi
 
   if (( copyconf )); then
