@@ -63,6 +63,26 @@ chroot_add_resolv_conf() {
   chroot_add_mount "$src" "$dest" -c --bind
 }
 
+rhel-chroot() {
+  (( EUID == 0 )) || die 'This script must be run with root privileges'
+
+  [[ -d $chrootdir ]] || die "Can't create chroot on non-directory %s" "$chrootdir"
+
+  $setup "$chrootdir" || die "failed to setup chroot %s" "$chrootdir"
+  if (( ! keepresolvconf )); then
+    chroot_add_resolv_conf "$chrootdir" || die "failed to setup resolv.conf"
+  fi
+
+  if ! mountpoint -q "$chrootdir"; then
+    warning "$chrootdir is not a mountpoint. This may have undesirable side effects."
+  fi
+
+  chroot_args=()
+  [[ $userspec ]] && chroot_args+=(--userspec "$userspec")
+
+  SHELL=/bin/bash chroot "${chroot_args[@]}" -- "$chrootdir" "${args[@]}"
+}
+
 OPTIND=1
 while getopts ':hu:r' flag; do
   case $flag in
