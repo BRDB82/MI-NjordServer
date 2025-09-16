@@ -3,7 +3,7 @@
 shopt -s extglob
 source "/usr/bin/dnfcommon"
 
-echo "PRE-GETOPTS \$@: [$@]"
+#echo "PRE-GETOPTS \$@: [$@]"
 
 keepresolvconf=0
 
