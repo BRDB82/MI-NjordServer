@@ -507,6 +507,7 @@ mkdir -p /mnt/etc/dnf/vars
 echo "$VERSION" > "/mnt/etc/dnf/vars/releasever"
 echo "x86_64" > "/mnt/etc/dnf/vars/baseearch"
 echo "rocky" > "/mnt/etc/dnf/vars/rltyp"
+cp /etc/os-release /mnt/etc
 if [[ ! -d "/sys/firmware/efi" ]]; then
     dnfstrap /mnt @core @development-tools kernel linux-firmware grub2 efibootmgr grub2-efi-x64 grub2-efi-x64-modules --assumeyes
 else
