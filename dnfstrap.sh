@@ -70,15 +70,12 @@ dnfstrap() {
     # install the host's repo definitions onto the new root
     #cp -a /etc/yum.repos.d "$newroot/etc/" #THIS GIVES ISSUES, DISABLED
     cp -a /etc/yum.repos.d/*.repo "$newroot/etc/yum.repos.d"
+    sed -i 's|BaseOS-$releasever$rltype|$rltype-BaseOS-$releasever|g' "$newroot/etc/yum.repos.d/"*.repo
   fi
 
   if (( copyconf )); then
     cp -a "$dnf_config" "$newroot/etc/dnf/dnf.conf"
   fi
-
-  if [ -d /tmp/rocky-repos.d ]; then
-  setopt_arg=(--setopt=reposdir=/tmp/rocky-repos.d)
-fi
 
 dnf --installroot="$newroot" clean all
 dnf --installroot="$newroot" makecache
@@ -88,7 +85,6 @@ for group in "${dnf_group_args[@]}"; do
   msg 'Installing group "%s" inside installroot' "$group"
   if ! dnf group install "$group" \
         --installroot="$newroot" \
-        "${setopt_arg[@]}" \
         --setopt=group_package_types=mandatory,default \
         --assumeyes; then
     die 'Failed to install group "%s"' "$group"
@@ -97,7 +93,7 @@ done
 
 # Then install regular packages into installroot
 if (( ${#dnf_args[@]} )); then
-  if ! dnf --installroot="$newroot" "${setopt_arg[@]}" "${dnf_args[@]}"; then
+  if ! dnf --installroot="$newroot" "${dnf_args[@]}"; then
     die 'Failed to install packages to new root'
   fi
 fi
