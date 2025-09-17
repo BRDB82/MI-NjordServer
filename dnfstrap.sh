@@ -65,6 +65,7 @@ dnfstrap() {
       *) dnf_args+=("$arg");;
     esac
   done
+  dnf_group_args=("${dnf_group_args[@]/@/}")
   
   if (( copyrepolist )); then
     # install the host's repo definitions onto the new root
@@ -85,17 +86,11 @@ dnf --installroot="$newroot" makecache
 # First install groups inside chroot
 for group in "${dnf_group_args[@]}"; do
   msg 'Installing group "%s" inside installroot' "$group"
-  #if ! dnf group install "$group" \
-  #      --installroot="$newroot" \
-  #      --setopt=group_package_types=mandatory,default \
-  #      --assumeyes; then
   if ! dnf --installroot="$newroot" \
     --setopt=install_weak_deps=False \
     --setopt=group_package_types=mandatory \
     group install "$group" -y; then
     die 'Failed to install group "%s"' "$group"
-    #dnf --installroot="$newroot" --setopt=install_weak_deps=False --setopt=group_package_types=mandatory group install core -y
-
   fi
 done
 
