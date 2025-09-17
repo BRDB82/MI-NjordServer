@@ -89,7 +89,7 @@ for group in "${dnf_group_args[@]}"; do
   #      --installroot="$newroot" \
   #      --setopt=group_package_types=mandatory,default \
   #      --assumeyes; then
-  if ! dnf --install="$newroot" \
+  if ! dnf --installroot="$newroot" \
     --setopt=install_weak_deps=False \
     --setopt=group_package_types=mandatory \
     group install "$group" -y; then
