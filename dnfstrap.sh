@@ -92,7 +92,7 @@ for group in "${dnf_group_args[@]}"; do
   if ! dnf --install="$newroot" \
     --setopt=install_weak_deps=False \
     --setopt=group_package_types=mandatory \
-    group install "$group" -y
+    group install "$group" -y; then
     die 'Failed to install group "%s"' "$group"
     #dnf --installroot="$newroot" --setopt=install_weak_deps=False --setopt=group_package_types=mandatory group install core -y
 
