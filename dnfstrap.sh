@@ -66,6 +66,9 @@ dnfstrap() {
     esac
   done
   dnf_group_args=("${dnf_group_args[@]/@/}")
+
+  printf 'dnf_group_args: [%s]\n' "${dnf_group_args[@]}"
+  printf 'dnf_args: [%s]\n' "${dnf_args[@]}"
   
   if (( copyrepolist )); then
     # install the host's repo definitions onto the new root
