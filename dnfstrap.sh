@@ -59,7 +59,9 @@ dnfstrap() {
 
   # Filter group targets and regular packages
   for arg in "$@"; do
-    if [[ "$arg" == @* ]]; then
+    if [[ "$arg" == --* || "$arg" == -* ]]; then
+      continue
+    elif [[ "$arg" == @* ]]; then
       dnf_group_args+=("${arg#@}")
     else
       dnf_args+=("$arg")
