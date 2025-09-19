@@ -405,14 +405,7 @@ echo -ne "
                     Installing Prerequisites
 -------------------------------------------------------------------------
 "
-#dnf --setopt=reposdir=/tmp/rocky-repos.d config-manager --set-enabled repl
-sed -i '/
-
-\[repl\]
-
-/,/^
-
-\[/ {/enabled=/s/.*/enabled=1/}' /tmp/rocky-repos.d/epel.repo
+sed -i '/^\[repl\]/,/^\[/{s/^enabled=.*/enabled=1/}' /tmp/rocky-repos.d/epel.repo
 
 dnf --setopt=reposdir=/tmp/rocky-repos.d install -y gdisk
 wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/dnfstrap.sh
