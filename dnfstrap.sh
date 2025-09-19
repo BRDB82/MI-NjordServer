@@ -13,7 +13,7 @@ source "/usr/bin/dnfcommon"
 hostcache=0
 copyrepolist=1
 dnf_args=()
-dng_group_args=()
+dnf_group_args=()
 setopt_arg=()
 dnfmode="install"
 copyconf=0
@@ -54,10 +54,9 @@ dnfstrap() {
   # mount API filesystems
   $setup "$newroot" || die "failed to setup chroot %s" "$newroot"
 
-
   # If no arguments are passed after root, default to @core
   (( $# == 0 )) && set -- @core
-  
+
   # Filter group targets and regular packages
   for arg in "$@"; do
     if [[ "$arg" == @* ]]; then
@@ -66,7 +65,6 @@ dnfstrap() {
       dnf_args+=("$arg")
     fi
   done
-  dnf_group_args=("${dnf_group_args[@]/@/}")
 
   printf 'dnf_group_args: [%s]\n' "${dnf_group_args[@]}"
   printf 'dnf_args: [%s]\n' "${dnf_args[@]}"
@@ -84,26 +82,26 @@ dnfstrap() {
     cp -a "$dnf_config" "$newroot/etc/dnf/dnf.conf"
   fi
 
-dnf --installroot="$newroot" clean all
-dnf --installroot="$newroot" makecache
+  dnf --installroot="$newroot" clean all
+  dnf --installroot="$newroot" makecache
 
-# First install groups inside chroot
-for group in "${dnf_group_args[@]}"; do
-  msg 'Installing group "%s" inside installroot' "$group"
-  if ! dnf --installroot="$newroot" \
-    --setopt=install_weak_deps=False \
-    --setopt=group_package_types=mandatory \
-    group install "$group" -y; then
-    die 'Failed to install group "%s"' "$group"
-  fi
-done
+  # First install groups inside chroot
+  for group in "${dnf_group_args[@]}"; do
+    msg 'Installing group "%s" inside installroot' "$group"
+    if ! dnf --installroot="$newroot" \
+      --setopt=install_weak_deps=False \
+      --setopt=group_package_types=mandatory \
+      group install "$group" -y; then
+      die 'Failed to install group "%s"' "$group"
+    fi
+  done
 
-# Then install regular packages into installroot
-if (( ${#dnf_args[@]} )); then
-  if ! dnf --installroot="$newroot" "${dnf_args[@]}"; then
-    die 'Failed to install packages to new root'
+  # Then install regular packages into installroot
+  if (( ${#dnf_args[@]} )); then
+    if ! dnf --installroot="$newroot" "${dnf_args[@]}"; then
+      die 'Failed to install packages to new root'
+    fi
   fi
-fi
 }
 
 if [[ -z $1 || $1 = @(-h|--help) ]]; then
@@ -153,7 +151,8 @@ shift
 
 [[ -d $newroot ]] || die "%s is not a directory" "$newroot"
 
-dnf_args+=("${@:-@core}" --config="$dnf_config" --installroot="$newroot")
+# The following dnf_args is only for passing options, not for packages/groups
+dnf_args+=(--config="$dnf_config" --installroot="$newroot")
 
 if (( ! hostcache )); then
   dnf_args+=(--setopt=keepcache=False)
@@ -164,4 +163,5 @@ if (( ! interactive )); then
 fi
 
 setup=chroot_setup
-dnfstrap
+dnfstrap "$@"
+
