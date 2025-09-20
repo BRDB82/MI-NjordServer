@@ -69,7 +69,11 @@ rhel-chroot() {
   [[ -d $chrootdir ]] || die "Can't create chroot on non-directory %s" "$chrootdir"
 
   $setup "$chrootdir" || die "failed to setup chroot %s" "$chrootdir"
+
+  echo "[DBG]:: keepresolvconf: $keepresolvconf"
+  
   if (( ! keepresolvconf )); then
+    echo "[DBG]:: starting chroot_add_resolv_conf"
     chroot_add_resolv_conf "$chrootdir" || die "failed to setup resolv.conf"
   fi
 
