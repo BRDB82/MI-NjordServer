@@ -581,7 +581,7 @@ echo -ne "
                     Network Setup
 -------------------------------------------------------------------------
 "
-dnf install -y NetworkManager
+dnf install -y NetworkManager --nogpgcheck
 systemctl enable NetworkManager
 systemctl start NetworkManager
 echo -ne "
