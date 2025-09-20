@@ -589,7 +589,7 @@ echo -ne "
                     Setting up repos for optimal download
 -------------------------------------------------------------------------
 "
-dnf install -y curl
+#dnf install -y curl
 dnf install -y https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/t/terminus-fonts-console-4.48-1.el8.noarch.rpm --nogpgcheck
 dnf install -y rsync grub2
 wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/dnfstrap.sh
