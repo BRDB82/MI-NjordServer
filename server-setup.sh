@@ -393,9 +393,13 @@ dnf --setopt=reposdir=/tmp/rocky-repos.d makecache
 dnf --setopt=reposdir=/tmp/rocky-repos.d install -y rpm
 dnf --setopt=reposdir=/tmp/rocky-repos.d install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm --nogpgcheck
 mv /etc/yum.repos.d/epel*.repo /tmp/rocky-repos.d/
-dnf --setopt=reposdir=/tmp/rocky-repos.d install -y grub2 grub2-tools grub2-efi-x64 grub2-efi-x64-modules kbd
+dnf --setopt=reposdir=/tmp/rocky-repos.d install -y grub2 grub2-tools grub2-efi-x64 grub2-efi-x64-modules kbd systemd-resolved
 dnf install -y https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/t/terminus-fonts-console-4.48-1.el8.noarch.rpm --nogpgcheck
 setfont ter-118b
+
+systemctl enable systemd-resolved
+systemctl start systemd-resolved
+ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 
 if [ ! -d "/mnt" ]; then
     mkdir /mnt
