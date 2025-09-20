@@ -100,6 +100,7 @@ dnfstrap() {
 
   # Then install regular packages into installroot
   if (( ${#dnf_args[@]} )); then
+    msg 'Installing "%s" inside installroot' "${dnf_args[@]}"
     if ! dnf --installroot="$newroot" install -y "${dnf_args[@]}"; then
       die 'Failed to install packages to new root'
     fi
