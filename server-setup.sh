@@ -586,6 +586,7 @@ echo -ne "
                     Network Setup
 -------------------------------------------------------------------------
 "
+echo 'nameserver 1.1.1.1' > /etc/resolv.conf
 dnf install -y NetworkManager --nogpgcheck
 systemctl enable NetworkManager
 systemctl start NetworkManager
