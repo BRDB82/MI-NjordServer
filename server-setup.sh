@@ -595,7 +595,7 @@ echo -ne "
                     Setting up repos for optimal download
 -------------------------------------------------------------------------
 "
-dnf install -y curl git wget chronyd
+dnf install -y curl git wget chrony
 systemctl enable chronyd
 systemctl start chronyd
 dnf install -y https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/t/terminus-fonts-console-4.48-1.el8.noarch.rpm --nogpgcheck
@@ -613,7 +613,7 @@ wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/genfstab.sh
   mv genfstab.sh /usr/local/bin/genfstab
 wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/fstab-helpers
   mv common /usr/local/bin/fstab-helpers
-dnf install -y git ntp wget
+dnf install -y git ntp
 cp /etc/dnf/dnf.conf /etc/dnf/dnf.conf.bak
 
 nc=$(grep -c ^"cpu cores" /proc/cpuinfo)
