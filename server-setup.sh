@@ -507,11 +507,11 @@ echo "$VERSION" > "/mnt/etc/dnf/vars/releasever"
 echo "x86_64" > "/mnt/etc/dnf/vars/basearch"
 echo "rocky" > "/mnt/etc/dnf/vars/rltype"
 cp /etc/os-release /mnt/etc
-if [[ ! -d "/sys/firmware/efi" ]]; then
+#if [[ ! -d "/sys/firmware/efi" ]]; then
     dnfstrap /mnt @core @"Development Tools" kernel linux-firmware grub2 efibootmgr grub2-efi-x64 grub2-efi-x64-modules --assumeyes
-else
-    dnfstrap /mnt @core @"Development Tools" kernel linux-firmware grub2 --assumeyes
-fi
+#else
+#    dnfstrap /mnt @core @"Development Tools" kernel linux-firmware grub2 --assumeyes
+#fi
 
 # Import official GPG key (optional, for repo trust)
 find /etc/pki/rpm-gpg/ -type f -name 'RPM-GPG-KEY-*' -exec install -Dm644 {} /mnt{} \;
@@ -533,7 +533,7 @@ echo -ne "
                     GRUB BIOS Bootloader Install & Check
 -------------------------------------------------------------------------
 "
-if [[ -d "/sys/firmware/efi" ]]; then
+#if [[ -d "/sys/firmware/efi" ]]; then
     grub2-install \
       --target=x86_64-efi \
       --efi-directory=/mnt/boot/efi \
@@ -541,9 +541,9 @@ if [[ -d "/sys/firmware/efi" ]]; then
       --boot-directory=/mnt/boot \
       --recheck \
       --force
-else
-    grub2-install --boot-directory=/mnt/boot "${DISK}"
-fi
+#else
+#    grub2-install --boot-directory=/mnt/boot "${DISK}"
+#fi
 echo -ne "
 -------------------------------------------------------------------------
                     Checking for low memory systems <8G
@@ -610,7 +610,7 @@ wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/genfstab.sh
   chmod +x genfstab.sh
   mv genfstab.sh /usr/local/bin/genfstab
 wget https://raw.githubusercontent.com/BRDB82/MI-NjordServer/main/fstab-helpers
-  mv common /usr/local/bin/fstab-helpers
+  mv fstab-helpers /usr/local/bin/fstab-helpers
 dnf install -y git ntp
 cp /etc/dnf/dnf.conf /etc/dnf/dnf.conf.bak
 
@@ -732,9 +732,9 @@ echo -ne "
 Final Setup and Configurations
 GRUB EFI Bootloader Install & Check
 "
-if [[ -d "/sys/firmware/efi" ]]; then
+#if [[ -d "/sys/firmware/efi" ]]; then
     grub2-install --efi-directory=/boot "${DISK}"
-fi
+#fi
 
 echo -ne "
 -------------------------------------------------------------------------
