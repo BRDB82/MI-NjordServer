@@ -19,7 +19,7 @@ echo -ne "
 
 #check if sudo
 
-#check if /etc/mi-njorserver/mijs.conf exists
-  #if not create and we have to install cockpit check if /etc/cockpit/cockpit.conf exists, else craete it & enable --now cockpit.socket
-#determine if we are on real hardware or virtual
-  #mijs.conf holds whether services are install  
+  #check if /etc/mi-njorserver/mijs.conf exists
+    #if not create and we have to install cockpit check if /etc/cockpit/cockpit.conf exists, else craete it & enable --now cockpit.socket & start or restar
+  #determine if we are on real hardware or virtual
+    #mijs.conf holds whether services are installed
